@@ -18,13 +18,16 @@ using namespace CTRE::Phoenix::MotorControl::CAN;
 class BaseDrive
 {
 public:
-	virtual ~BaseDrive();
+	virtual ~BaseDrive() = 0;
 
 	// ---- DIFFERENTIAL_DRIVE METHODS ----
 	virtual void ArcadeDrive(double xSpeed, double zRotation, bool squaredInputs = true) = 0;
 	virtual void CurvatureDrive(double xSpeed, double zRotation, bool isQuickTurn) = 0;
 	virtual void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) = 0;
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
+
+	virtual void driveStraight(double speed) = 0;
+	virtual double getJoystickValue(int axisNum) = 0;
 
 protected:
 //	// These ARRAYS will store the port mappings for the motor(s)
