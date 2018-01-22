@@ -1,8 +1,11 @@
 #ifndef SRC_ROBOT_H_
 #define SRC_ROBOT_H_
 
-// Order imports based on most global -> local
+// Order imports based on most local -> global
 
+#include <driveType/BaseDrive.hpp>
+#include "driveType/PeanutChassis.h"
+#include "driveType/CompChassis.h"
 #include "WPILib.h"
 
 class Robot : public frc::IterativeRobot
@@ -27,6 +30,8 @@ public:
 
 
 private:
+	BaseDrive *drive;
+
 
 };
 
