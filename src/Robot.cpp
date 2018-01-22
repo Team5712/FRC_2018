@@ -1,44 +1,63 @@
 #include "Robot.h"
+#include <iostream>
 
+#define IS_COMPETITION true
 
-Robot::Robot()
-{
-
-}
-
-Robot::~Robot()
-{
+Robot::Robot() {
 
 }
 
-void Robot::RobotInit()
-{
+Robot::~Robot() {
 
 }
 
-void Robot::AutonomousInit()
-{
+/*
+ * 		char str[80];
+ sprintf(str, "Connected to the Jetson!");
+ DriverStation::ReportError(str);
+ *
+ *  */
+
+void Robot::RobotInit() {
+
+#ifdef IS_COMPETITION
+
+	robot = new CompetitionChassis();
+
+#else
+
+	robot = new PeanutChassis();
+
+#endif
+
+
 
 }
 
-void Robot::AutonomousPeriodic()
-{
+void Robot::AutonomousInit() {
 
 }
 
-void Robot::TeleopInit()
-{
-
+void Robot::AutonomousPeriodic() {
+	robot->teleopPeriodic();
 }
 
-void Robot::TeleopPeriodic()
-{
-
+void Robot::TeleopInit() {
 }
 
+void Robot::TeleopPeriodic() {
+
+#ifdef IS_COMPETITION
+
+#else
+
+#endif
+
+
+
+}
 
 START_ROBOT_CLASS(Robot)
-
 
 // OLD STRUCTURE
 //class Robot : public frc::IterativeRobot {
