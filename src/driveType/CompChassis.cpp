@@ -19,12 +19,6 @@ CompChassis::~CompChassis()
 	delete rightTalonMaster;
 }
 
-BaseDrive::~BaseDrive()
-{
-	delete drive;
-	delete joystick;
-}
-
 /**
  * Arcade drive method for differential drive platform. The calculated values
  * will be squared to decrease sensitivity at low speeds. This method
