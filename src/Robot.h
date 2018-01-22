@@ -7,17 +7,17 @@
 #include "driveType/PeanutChassis.h"
 #include "driveType/CompChassis.h"
 #include "WPILib.h"
-#include <iostream>
-#include <string>
-#include <cmath>
-
-#include <IterativeRobot.h>
-#include "ctre/Phoenix.h"
-#include "Drive/DifferentialDrive.h"
-#include "./driveType/CompetitionChassis.h"
-#include "./driveType/PeanutChassis.h"
-#include "./driveType/BaseDrive.h"
-#include "Joystick.h"
+//#include <iostream>
+//#include <string>
+//#include <cmath>
+//
+//#include <IterativeRobot.h>
+//#include "ctre/Phoenix.h"
+//#include "Drive/DifferentialDrive.h"
+//#include "./driveType/CompetitionChassis.h"
+//#include "./driveType/PeanutChassis.h"
+//#include "./driveType/BaseDrive.h"
+//#include "Joystick.h"
 
 
 class Robot : public frc::IterativeRobot
