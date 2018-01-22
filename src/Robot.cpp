@@ -7,7 +7,7 @@ Robot::Robot()
 {
 
 	#ifdef IS_COMPETITION
-		drive = new CompetitionChassis();
+		drive = new CompChassis();
 	#else
 		robot = new PeanutChassis();
 	#endif
