@@ -1,5 +1,5 @@
-#ifndef SRC_DRIVETYPE_BASEDRIVE_H_
-#define SRC_DRIVETYPE_BASEDRIVE_H_
+#ifndef SRC_DRIVETYPE_BASEDRIVE_HPP_
+#define SRC_DRIVETYPE_BASEDRIVE_HPP_
 
 #if true
 	#define CTRE ctre
@@ -27,7 +27,23 @@ public:
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
 	virtual void driveStraight(double speed) = 0;
-	virtual double getJoystickValue(int axisNum) = 0;
+
+	/**
+	 * This will return the value of the axis specified by the given index.
+	 * The axis indices start at 0.
+	 *
+	 * @param axisNum
+	 * the index of the desired axis value (0: twist, 1: x, 2: y)
+	 *
+	 * @return
+	 * A double value from -1.0 to +1.0 according to the joystick's position
+	 * and the requested axis.
+	 */
+	virtual double getJoystickValue(int axisNum)
+	{
+		// TODO: Verify the axis mappings (what is 0, 1, 2, etc.?)
+		return joystick->GetRawAxis(axisNum);
+	}
 
 protected:
 //	// These ARRAYS will store the port mappings for the motor(s)
@@ -45,4 +61,4 @@ private:
 
 };
 
-#endif /* SRC_DRIVETYPE_BASEDRIVE_H_ */
+#endif /* SRC_DRIVETYPE_BASEDRIVE_HPP_ */
