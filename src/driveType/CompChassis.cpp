@@ -20,6 +20,19 @@ CompChassis::~CompChassis()
 	delete rightTalonMaster;
 }
 
+void CompChassis::autonomousPeriodic()
+{
+
+}
+
+void CompChassis::teleopPeriodic()
+{
+	char str[80];
+	sprintf(str, "Message from Competition Chassis");
+	DriverStation::ReportError(str);
+}
+
+
 /**
  * Arcade drive method for differential drive platform. The calculated values
  * will be squared to decrease sensitivity at low speeds. This method

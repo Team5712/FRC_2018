@@ -20,6 +20,11 @@ public:
 	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) override;
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
+	// ---- ROBOT.CPP METHODS ----
+	void autonomousPeriodic() override;
+	void teleopPeriodic() override;
+	// ---- END ROBOT.CPP METHODS ----
+
 	void driveStraight(double speed) override;
 
 private:

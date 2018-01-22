@@ -11,7 +11,6 @@ class PeanutChassis : public BaseDrive
 {
 public:
 	PeanutChassis();
-	void teleopPeriodic();
 	virtual ~PeanutChassis();
 
 	// Override DifferentialDrive methods from the base drive class
@@ -20,6 +19,11 @@ public:
 	void CurvatureDrive(double xSpeed, double zRotation, bool isQuickTurn) override;
 	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) override;
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
+
+	// ---- ROBOT.CPP METHODS ----
+	void autonomousPeriodic() override;
+	void teleopPeriodic() override;
+	// ---- END ROBOT.CPP METHODS ----
 
 	// Overwritten from BaseDrive.h
 	void driveStraight(double speed) override;

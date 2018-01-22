@@ -12,18 +12,23 @@ PeanutChassis::PeanutChassis()
 
 }
 
-void PeanutChassis::teleopPeriodic()
-{
-	char str[80];
-	sprintf(str, "Message from peanut");
-	DriverStation::ReportError(str);
-}
-
 PeanutChassis::~PeanutChassis()
 {
 	// De-reference pointers
 	delete talonLeft;
 	delete talonRight;
+}
+
+void PeanutChassis::autonomousPeriodic()
+{
+
+}
+
+void PeanutChassis::teleopPeriodic()
+{
+	char str[80];
+	sprintf(str, "Message from peanut");
+	DriverStation::ReportError(str);
 }
 
 /**
