@@ -3,6 +3,7 @@
 
 Robot::Robot()
 {
+	drive = new PeanutChassis();
 
 }
 
@@ -23,7 +24,7 @@ void Robot::AutonomousInit()
 
 void Robot::AutonomousPeriodic()
 {
-
+	drive->TankDrive(0.3, -0.3);
 }
 
 void Robot::TeleopInit()
@@ -33,7 +34,7 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-
+	drive->ArcadeDrive(drive->getJoystickValue(1), drive->getJoystickValue(0));
 }
 
 
