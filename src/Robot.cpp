@@ -1,60 +1,48 @@
 #include "Robot.h"
 #include <iostream>
 
-#define IS_COMPETITION true
+#define IS_COMPETITION false
 
-Robot::Robot() {
+Robot::Robot()
+{
 
-}
-
-Robot::~Robot() {
-
-}
-
-/*
- * 		char str[80];
- sprintf(str, "Connected to the Jetson!");
- DriverStation::ReportError(str);
- *
- *  */
-
-void Robot::RobotInit() {
-
-#ifdef IS_COMPETITION
-
-	robot = new CompetitionChassis();
-
-#else
-
-	robot = new PeanutChassis();
-
-#endif
-
+	#ifdef IS_COMPETITION
+		drive = new CompetitionChassis();
+	#else
+		robot = new PeanutChassis();
+	#endif
 
 
 }
 
-void Robot::AutonomousInit() {
+Robot::~Robot()
+{
 
 }
 
-void Robot::AutonomousPeriodic() {
-	robot->teleopPeriodic();
+void Robot::RobotInit()
+{
+
 }
 
-void Robot::TeleopInit() {
+void Robot::AutonomousInit()
+{
+
 }
 
-void Robot::TeleopPeriodic() {
+void Robot::AutonomousPeriodic()
+{
+	drive->TankDrive(0.3, -0.3);
+}
 
-#ifdef IS_COMPETITION
+void Robot::TeleopInit()
+{
 
-#else
+}
 
-#endif
-
-
-
+void Robot::TeleopPeriodic()
+{
+	drive->ArcadeDrive(drive->getJoystickValue(1), drive->getJoystickValue(0));
 }
 
 START_ROBOT_CLASS(Robot)
