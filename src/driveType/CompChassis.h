@@ -21,11 +21,15 @@ public:
 	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) override;
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
+	void driveStraight(double speed);
 
 private:
 	// Probably have multiple motors, so declare master / slaves here
 	WPI_TalonSRX *leftTalonMaster;
 	WPI_TalonSRX *rightTalonMaster;
+
+	double leftBias = 0.0; // Bias used to drive straight
+	double rightBias = 0.0;
 
 };
 

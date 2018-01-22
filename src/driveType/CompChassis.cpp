@@ -83,3 +83,17 @@ void CompChassis::TankDrive(double leftSpeed, double rightSpeed, bool squaredInp
 	drive->TankDrive(leftSpeed, rightSpeed, squaredInputs);
 }
 
+/**
+ * Attempt to drive in a straight line using the pre-defined bias variables.
+ * This method could be used to conduct an automated test of the robot to help
+ * determine the ideal bias values for a completely straight path.
+ *
+ * @param speed
+ * the speed that the robot should drive forward at
+ */
+void CompChassis::driveStraight(double speed)
+{
+	TankDrive(speed + leftBias, speed + rightBias);
+}
+
+
