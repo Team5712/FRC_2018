@@ -1,8 +1,7 @@
 #ifndef SRC_DRIVETYPE_PEANUTCHASSIS_H_
 #define SRC_DRIVETYPE_PEANUTCHASSIS_H_
 
-#include "BaseDrive.h"
-//#include "ctre/phoenix/MotorControl/CAN/TalonSRX.h"
+#include <driveType/BaseDrive.hpp>
 #include "ctre/Phoenix.h"
 
 
@@ -21,12 +20,14 @@ public:
 	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) override;
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
-	void driveStraight(double speed);
+	// Overwritten from BaseDrive.h
+	double getJoystickValue(int axisNum) override;
 
 private:
 	WPI_TalonSRX *leftTalon;
 	WPI_TalonSRX *rightTalon;
 
+	// Values specific to this class
 	double leftBias = 0.0; // Used to drive straight. Pre-defined and tested
 	double rightBias = 0.0;
 

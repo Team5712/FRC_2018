@@ -96,3 +96,9 @@ void PeanutChassis::driveStraight(double speed)
 	TankDrive(speed + leftBias, speed + rightBias);
 }
 
+/*
+ * These methods will use the default functionality defined in BaseDrive.hpp:
+ *
+ * double PeanutChassis::getJoystickValue(int axisNum);
+ */
+
