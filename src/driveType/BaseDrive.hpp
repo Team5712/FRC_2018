@@ -18,7 +18,11 @@ using namespace CTRE::Phoenix::MotorControl::CAN;
 class BaseDrive
 {
 public:
-	virtual ~BaseDrive() = 0;
+	virtual ~BaseDrive()
+	{
+		delete drive;
+		delete joystick;
+	};
 
 	// ---- DIFFERENTIAL_DRIVE METHODS ----
 	virtual void ArcadeDrive(double xSpeed, double zRotation, bool squaredInputs = true) = 0;
