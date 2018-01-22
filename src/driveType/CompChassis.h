@@ -1,8 +1,7 @@
 #ifndef SRC_DRIVETYPE_COMPCHASSIS_H_
 #define SRC_DRIVETYPE_COMPCHASSIS_H_
 
-#include "BaseDrive.h"
-//#include "ctre/phoenix/MotorControl/CAN/TalonSRX.h"
+#include <driveType/BaseDrive.hpp>
 #include "ctre/Phoenix.h"
 
 
@@ -21,7 +20,7 @@ public:
 	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) override;
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
-	void driveStraight(double speed);
+	void driveStraight(double speed) override;
 
 private:
 	// Probably have multiple motors, so declare master / slaves here
