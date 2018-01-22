@@ -21,7 +21,7 @@ public:
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
 	// Overwritten from BaseDrive.h
-	double getJoystickValue(int axisNum) override;
+	void driveStraight(double speed) override;
 
 private:
 	WPI_TalonSRX *leftTalon;
