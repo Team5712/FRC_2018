@@ -36,6 +36,7 @@ private:
 	WPI_TalonSRX *rightTalon;
 
 	Timer *timer;
+	Potentiometer *pot;
 
 	// Values specific to this class
 	double leftBias = 0.0; // Used to drive straight. Pre-defined and tested

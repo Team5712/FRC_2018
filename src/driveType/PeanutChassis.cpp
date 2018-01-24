@@ -58,6 +58,8 @@ void PeanutChassis::autonomousPeriodic()
 void PeanutChassis::teleopInit()
 {
 
+	pot = new AnalogPotentiometer(0, 1, 0);
+
 }
 
 void PeanutChassis::teleopPeriodic()
@@ -67,6 +69,13 @@ void PeanutChassis::teleopPeriodic()
 //	DriverStation::ReportError("Message from Peanut chassis");
 
 	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
+
+	double val = pot->Get();
+
+	char str[128];
+	sprintf(str,"Snoopy is smokin pot at: %f", val);
+	DriverStation::ReportError(str);
+
 }
 
 // ---- END ROBOT.CPP METHODS ----
