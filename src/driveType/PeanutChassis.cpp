@@ -33,10 +33,8 @@ void PeanutChassis::teleopPeriodic()
 //	char str[80];
 //	sprintf(str, "Message from peanut");
 //	DriverStation::ReportError("Message from Peanut chassis");
+
 	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
-
-
-
 }
 
 /**
