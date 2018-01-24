@@ -27,7 +27,7 @@ void Robot::RobotInit()
 
 void Robot::AutonomousInit()
 {
-
+	drive->autonomousInit();
 }
 
 void Robot::AutonomousPeriodic()
@@ -37,7 +37,7 @@ void Robot::AutonomousPeriodic()
 
 void Robot::TeleopInit()
 {
-
+	drive->teleopInit();
 }
 
 void Robot::TeleopPeriodic()
