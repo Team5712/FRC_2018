@@ -3,10 +3,10 @@
 
 PeanutChassis::PeanutChassis()
 {
-	talonLeft = new WPI_TalonSRX(1);
-	talonRight = new WPI_TalonSRX(2);
+	leftTalon = new WPI_TalonSRX(2);
+	rightTalon = new WPI_TalonSRX(1);
 
-	drive = new DifferentialDrive(*talonLeft, *talonRight);
+	drive = new DifferentialDrive(*leftTalon, *rightTalon);
 
 	joystick = new Joystick(0);
 
@@ -15,21 +15,28 @@ PeanutChassis::PeanutChassis()
 PeanutChassis::~PeanutChassis()
 {
 	// De-reference pointers
-	delete talonLeft;
-	delete talonRight;
+	delete leftTalon;
+	delete rightTalon;
 }
 
 void PeanutChassis::autonomousPeriodic()
 {
+	TankDrive(0.3, -0.3);
 
+	char str[80];
+	sprintf(str, "L encoder = %d", leftTalon->GetSelectedSensorPosition(0));
+	DriverStation::ReportError(str);
 }
 
 void PeanutChassis::teleopPeriodic()
 {
-	char str[80];
-	sprintf(str, "Message from peanut");
-	DriverStation::ReportError("Message from Peanut chassis");
+//	char str[80];
+//	sprintf(str, "Message from peanut");
+//	DriverStation::ReportError("Message from Peanut chassis");
 	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
+
+
+
 }
 
 /**
