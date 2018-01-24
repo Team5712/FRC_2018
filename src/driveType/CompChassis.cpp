@@ -4,12 +4,15 @@
 CompChassis::CompChassis()
 {
 	// Though this shows an error, it will still build
-	leftTalonMaster = new WPI_TalonSRX(0);
+	leftTalonMaster = new WPI_TalonSRX(2);
 	rightTalonMaster = new WPI_TalonSRX(1);
 
 	drive = new DifferentialDrive(*leftTalonMaster, *rightTalonMaster);
 
 	joystick = new Joystick(0);
+
+	leftTalonMaster->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
+	leftTalonMaster->SetSelectedSensorPosition(0, 0, 10);
 
 }
 
@@ -22,14 +25,21 @@ CompChassis::~CompChassis()
 
 void CompChassis::autonomousPeriodic()
 {
-
+	char str[80];
+	sprintf(str, "L encoder = %d", leftTalonMaster->GetSelectedSensorPosition(0));
+	DriverStation::ReportError(str);
 }
 
 void CompChassis::teleopPeriodic()
 {
-	char str[80];
-	sprintf(str, "Message from Competition Chassis");
-	DriverStation::ReportError(str);
+//	 This works:
+//	char str[80];
+//	sprintf(str, "Message from Competition Chassis");
+//	DriverStation::ReportError(str);
+
+
+
+	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
 }
 
 

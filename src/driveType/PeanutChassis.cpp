@@ -10,6 +10,9 @@ PeanutChassis::PeanutChassis()
 
 	joystick = new Joystick(0);
 
+	leftTalon->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
+	leftTalon->SetSelectedSensorPosition(0, 0, 10);
+
 }
 
 PeanutChassis::~PeanutChassis()
