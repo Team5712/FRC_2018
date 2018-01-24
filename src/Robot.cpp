@@ -6,10 +6,10 @@
 Robot::Robot()
 {
 
-	#ifdef IS_COMPETITION
+	#if IS_COMPETITION
 		drive = new CompChassis();
 	#else
-		robot = new PeanutChassis();
+		drive = new PeanutChassis();
 	#endif
 
 
@@ -32,7 +32,7 @@ void Robot::AutonomousInit()
 
 void Robot::AutonomousPeriodic()
 {
-	drive->TankDrive(0.3, -0.3);
+	drive->autonomousPeriodic();
 }
 
 void Robot::TeleopInit()
@@ -42,7 +42,7 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-	drive->ArcadeDrive(drive->getJoystickValue(1), drive->getJoystickValue(0));
+	drive->teleopPeriodic();
 }
 
 START_ROBOT_CLASS(Robot)
