@@ -30,8 +30,8 @@ public:
 
 private:
 
-	WPI_TalonSRX *talonLeft;
-	WPI_TalonSRX *talonRight;
+	WPI_TalonSRX *leftTalon;
+	WPI_TalonSRX *rightTalon;
 
 	// Values specific to this class
 	double leftBias = 0.0; // Used to drive straight. Pre-defined and tested
