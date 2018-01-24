@@ -23,11 +23,24 @@ CompChassis::~CompChassis()
 	delete rightTalonMaster;
 }
 
+
+// ---- ROBOT.CPP METHODS ----
+
+void CompChassis::autonomousInit()
+{
+
+}
+
 void CompChassis::autonomousPeriodic()
 {
 	char str[80];
 	sprintf(str, "L encoder = %d", leftTalonMaster->GetSelectedSensorPosition(0));
 	DriverStation::ReportError(str);
+}
+
+void CompChassis::teleopInit()
+{
+
 }
 
 void CompChassis::teleopPeriodic()
@@ -37,12 +50,10 @@ void CompChassis::teleopPeriodic()
 //	sprintf(str, "Message from Competition Chassis");
 //	DriverStation::ReportError(str);
 
-
-
 	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
 }
 
-
+// ---- END ROBOT.CPP METHODS ----
 /**
  * Arcade drive method for differential drive platform. The calculated values
  * will be squared to decrease sensitivity at low speeds. This method
