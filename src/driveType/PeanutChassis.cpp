@@ -10,6 +10,10 @@ PeanutChassis::PeanutChassis()
 
 	joystick = new Joystick(0);
 
+	timer = new Timer();
+	timer->Reset();
+	timer->Start();
+
 	leftTalon->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
 	leftTalon->SetSelectedSensorPosition(0, 0, 10);
 
@@ -20,15 +24,29 @@ PeanutChassis::~PeanutChassis()
 	// De-reference pointers
 	delete leftTalon;
 	delete rightTalon;
+
+	delete timer;
 }
 
 void PeanutChassis::autonomousPeriodic()
 {
-	TankDrive(0.3, -0.3);
+
+	if(!timer->Get() > 3.0)
+	{
+		TankDrive(0.3, -0.3);
+	} else
+	{
+		//timer->Stop();
+		TankDrive(0.0, 0.0);
+	}
 
 	char str[80];
-	sprintf(str, "L encoder = %d", leftTalon->GetSelectedSensorPosition(0));
+	sprintf(str, "L encoder = %f", leftTalon->GetSelectedSensorPosition(0));
 	DriverStation::ReportError(str);
+
+	sprintf(str, "Time = %f", timer->Get());
+	DriverStation::ReportError(str);
+
 }
 
 void PeanutChassis::teleopPeriodic()
