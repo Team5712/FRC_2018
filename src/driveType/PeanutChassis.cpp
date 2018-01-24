@@ -11,13 +11,12 @@ PeanutChassis::PeanutChassis()
 	joystick = new Joystick(0);
 
 	timer = new Timer();
-	timer->Reset();
-	timer->Start();
 
+	pot = new AnalogPotentiometer(0, 1, 0);
+
+	// Define the settings for the encoders
 	leftTalon->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
-	leftTalon->SetSelectedSensorPosition(0, 0, 10);
 	rightTalon->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
-	rightTalon->SetSelectedSensorPosition(0, 0, 10);
 
 }
 
@@ -35,20 +34,26 @@ PeanutChassis::~PeanutChassis()
 void PeanutChassis::autonomousInit()
 {
 
+	leftTalon->SetSelectedSensorPosition(0, 0, 10);
+	rightTalon->SetSelectedSensorPosition(0, 0, 10);
+
+	timer->Reset();
+	timer->Start();
+
 }
 
 void PeanutChassis::autonomousPeriodic()
 {
 
-	if(timer->Get() < 7.0)
+	if(timer->Get() < 1.0)
 	{
 		TankDrive(0.3, -0.3);
 	} else
 	{
-		//timer->Stop();
 		TankDrive(0.0, 0.0);
 	}
 
+	// NOTE: The encoder values return as an INTEGER, not a double
 	char str[80];
 	sprintf(str, "L = %d, R = %d", leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0));
 	DriverStation::ReportError(str);
@@ -57,8 +62,6 @@ void PeanutChassis::autonomousPeriodic()
 
 void PeanutChassis::teleopInit()
 {
-
-	pot = new AnalogPotentiometer(0, 1, 0);
 
 }
 
