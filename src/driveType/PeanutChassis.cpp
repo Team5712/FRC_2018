@@ -3,8 +3,8 @@
 
 PeanutChassis::PeanutChassis()
 {
-	talonLeft = new WPI_TalonSRX(2);
-	talonRight = new WPI_TalonSRX(1);
+	talonLeft = new WPI_TalonSRX(1);
+	talonRight = new WPI_TalonSRX(2);
 
 	drive = new DifferentialDrive(*talonLeft, *talonRight);
 
@@ -28,7 +28,8 @@ void PeanutChassis::teleopPeriodic()
 {
 	char str[80];
 	sprintf(str, "Message from peanut");
-	DriverStation::ReportError(str);
+	DriverStation::ReportError("Message from Peanut chassis");
+	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
 }
 
 /**
