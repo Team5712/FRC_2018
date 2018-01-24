@@ -31,7 +31,9 @@ public:
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
 	// ---- ROBOT.CPP METHODS ----
+	virtual void autonomousInit() = 0;
 	virtual void autonomousPeriodic() = 0;
+	virtual void teleopInit() = 0;
 	virtual void teleopPeriodic() = 0;
 	// ---- END ROBOT.CPP METHODS ----
 
