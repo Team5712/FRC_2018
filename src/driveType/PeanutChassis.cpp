@@ -16,6 +16,8 @@ PeanutChassis::PeanutChassis()
 
 	leftTalon->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
 	leftTalon->SetSelectedSensorPosition(0, 0, 10);
+	rightTalon->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
+	rightTalon->SetSelectedSensorPosition(0, 0, 10);
 
 }
 
@@ -28,10 +30,17 @@ PeanutChassis::~PeanutChassis()
 	delete timer;
 }
 
+// ---- ROBOT.CPP METHODS ----
+
+void PeanutChassis::autonomousInit()
+{
+
+}
+
 void PeanutChassis::autonomousPeriodic()
 {
 
-	if(!timer->Get() > 3.0)
+	if(timer->Get() < 7.0)
 	{
 		TankDrive(0.3, -0.3);
 	} else
@@ -41,11 +50,13 @@ void PeanutChassis::autonomousPeriodic()
 	}
 
 	char str[80];
-	sprintf(str, "L encoder = %f", leftTalon->GetSelectedSensorPosition(0));
+	sprintf(str, "L = %d, R = %d", leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0));
 	DriverStation::ReportError(str);
 
-	sprintf(str, "Time = %f", timer->Get());
-	DriverStation::ReportError(str);
+}
+
+void PeanutChassis::teleopInit()
+{
 
 }
 
@@ -57,6 +68,11 @@ void PeanutChassis::teleopPeriodic()
 
 	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
 }
+
+// ---- END ROBOT.CPP METHODS ----
+
+// ---- DIFFERENTIAL_DRIVE METHODS ----
+
 
 /**
  * Arcade drive method for differential drive platform. The calculated values
@@ -114,6 +130,9 @@ void PeanutChassis::TankDrive(double leftSpeed, double rightSpeed, bool squaredI
 {
 	drive->TankDrive(leftSpeed, rightSpeed, squaredInputs);
 }
+
+// ---- END DIFFERENTIAL_DRIVE METHODS ----
+
 
 /**
  * Attempt to drive in a straight line using the pre-defined bias variables.

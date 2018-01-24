@@ -21,7 +21,9 @@ public:
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
 	// ---- ROBOT.CPP METHODS ----
+	void autonomousInit() override;
 	void autonomousPeriodic() override;
+	void teleopInit() override;
 	void teleopPeriodic() override;
 	// ---- END ROBOT.CPP METHODS ----
 
