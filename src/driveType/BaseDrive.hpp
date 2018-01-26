@@ -12,6 +12,7 @@
 
 #include "ctre/phoenix/MotorControl/CAN/TalonSRX.h"
 #include "WPILib.h"
+#include "AHRS.h"
 
 //using namespace CTRE::Phoenix::MotorControl::CAN;
 
@@ -66,6 +67,10 @@ protected:
 //	std::vector<TalonSRX> rightTalons;
 
 	Joystick *joystick;
+
+	AHRS *gyro;
+
+
 
 private:
 
