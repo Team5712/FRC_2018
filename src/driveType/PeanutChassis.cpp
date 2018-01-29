@@ -1,6 +1,14 @@
 #include "driveType/PeanutChassis.h"
 #include "WPILib.h"
 
+/**
+ * Initalize the objects needed for this Chassis type here. Due note that
+ * these operations are called in RobotInit(), and will take effect as
+ * soon as the robot is powered on. For exmaple, a timer started in
+ * the constructor will continue to run and may return unexpected
+ * or incorrect values. Instead, start the timer in the designated
+ * init() method (autonomousInit() or teleopInit()).
+ */
 PeanutChassis::PeanutChassis()
 {
 	leftTalon = new WPI_TalonSRX(2);
@@ -9,6 +17,8 @@ PeanutChassis::PeanutChassis()
 	drive = new DifferentialDrive(*leftTalon, *rightTalon);
 
 	joystick = new Joystick(0);
+
+	gyro = new AHRS(SPI::Port::kMXP, AHRS::kRawData, 200 /*samples/sec*/);
 
 	timer = new Timer();
 
@@ -20,6 +30,11 @@ PeanutChassis::PeanutChassis()
 
 }
 
+/**
+ * Delete and dereference pointers here. Avoid deleting pointers
+ * that originate from BaseDrive.hpp as it will delete the pointers in its
+ * deconstructor.
+ */
 PeanutChassis::~PeanutChassis()
 {
 	// De-reference pointers
@@ -31,9 +46,14 @@ PeanutChassis::~PeanutChassis()
 
 // ---- ROBOT.CPP METHODS ----
 
+/**
+ * Called by Robot.cpp when the Autonomous mode was initalized. Operations
+ * may include resetting the value of encoders, starting timers, or zeroing
+ * in the gyro. Overrides from BaseDrive.hpp
+ */
 void PeanutChassis::autonomousInit()
 {
-
+	gyro->ZeroYaw();
 	leftTalon->SetSelectedSensorPosition(0, 0, 10);
 	rightTalon->SetSelectedSensorPosition(0, 0, 10);
 
@@ -42,12 +62,23 @@ void PeanutChassis::autonomousInit()
 
 }
 
+/**
+ * Called by Robot.cpp during autonomous. This is a looped function and will
+ * be caused every cycle of the Robot. This should include all of the
+ * operations for autonomous. Overrides from BaseDrive.hpp
+ */
 void PeanutChassis::autonomousPeriodic()
 {
+	//int initialVal = leftTalon->GetSelectedSensorPosition(0);
+	leftTraveled = leftTalon->GetSelectedSensorPosition(0) * leftRatio;
+	rightTraveled = rightTalon->GetSelectedSensorPosition(0) * rightRatio;
 
-	if(timer->Get() < 1.0)
+	char str2[80];
+	sprintf(str2, "value of leftTraveled: %d", leftTraveled);
+	DriverStation::ReportError(str2);
+	if(abs(leftTraveled) < distance)
 	{
-		TankDrive(0.3, -0.3);
+		TankDrive(0.3, 0.3);
 	} else
 	{
 		TankDrive(0.0, 0.0);
@@ -57,14 +88,27 @@ void PeanutChassis::autonomousPeriodic()
 	char str[80];
 	sprintf(str, "L = %d, R = %d", leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0));
 	DriverStation::ReportError(str);
+	sprintf(str, "gyro: %f", gyro->GetYaw());
+	DriverStation::ReportError(str);
 
 }
 
+/**
+ * Method that is called at the beginning of TeleOp. It will be called once
+ * and should initalize and set the defaults for the Robot. Overrides
+ * from BaseDrive.hpp
+ */
 void PeanutChassis::teleopInit()
 {
-
+	leftTalon->SetSelectedSensorPosition(0, 0, 10);
+	rightTalon->SetSelectedSensorPosition(0, 0, 10);
 }
 
+/**
+ * Called in a loop from Robot.cpp. It should include general operations for
+ * driving the robot, such as joystick input, motor output, and reading
+ * various sensor values. Overrides from BaseDrive.hpp
+ */
 void PeanutChassis::teleopPeriodic()
 {
 //	char str[80];
@@ -73,10 +117,12 @@ void PeanutChassis::teleopPeriodic()
 
 	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
 
-	double val = pot->Get();
+	//double val = pot->Get();
 
 	char str[128];
-	sprintf(str,"Snoopy is smokin pot at: %f", val);
+	//sprintf(str,"Snoopy is smokin pot at: %f", val);
+	//DriverStation::ReportError(str);
+	sprintf(str, "L = %d, R = %d", leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0));
 	DriverStation::ReportError(str);
 
 }
@@ -156,7 +202,7 @@ void PeanutChassis::TankDrive(double leftSpeed, double rightSpeed, bool squaredI
  */
 void PeanutChassis::driveStraight(double speed)
 {
-	TankDrive(speed + leftBias, speed + rightBias);
+	TankDrive(speed * leftBias, speed * rightBias);
 }
 
 /*
