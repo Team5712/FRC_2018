@@ -1,6 +1,14 @@
-#include <driveType/CompChassis.h>
+#include "driveType/CompChassis.h"
 #include "WPILib.h"
 
+/**
+ * Initalize the objects needed for this Chassis type here. Due note that
+ * these operations are called in RobotInit(), and will take effect as
+ * soon as the robot is powered on. For exmaple, a timer started in
+ * the constructor will continue to run and may return unexpected
+ * or incorrect values. Instead, start the timer in the designated
+ * init() method (autonomousInit() or teleopInit()).
+ */
 CompChassis::CompChassis()
 {
 	// Though this shows an error, it will still build
@@ -12,10 +20,15 @@ CompChassis::CompChassis()
 	joystick = new Joystick(0);
 
 	leftTalonMaster->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
-	leftTalonMaster->SetSelectedSensorPosition(0, 0, 10);
+	rightTalonMaster->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
 
 }
 
+/**
+ * Delete and dereference pointers here. Avoid deleting pointers
+ * that originate from BaseDrive.hpp as it will delete the pointers in its
+ * deconstructor.
+ */
 CompChassis::~CompChassis()
 {
 	// De-allocate pointers
@@ -26,11 +39,23 @@ CompChassis::~CompChassis()
 
 // ---- ROBOT.CPP METHODS ----
 
+/**
+ * Called by Robot.cpp when the Autonomous mode was initalized. Operations
+ * may include resetting the value of encoders, starting timers, or zeroing
+ * in the gyro. Overrides from BaseDrive.hpp
+ */
 void CompChassis::autonomousInit()
 {
+	leftTalonMaster->SetSelectedSensorPosition(0, 0, 10);
+	rightTalonMaster->SetSelectedSensorPosition(0, 0, 10);
 
 }
 
+/**
+ * Called by Robot.cpp during autonomous. This is a looped function and will
+ * be caused every cycle of the Robot. This should include all of the
+ * operations for autonomous. Overrides from BaseDrive.hpp
+ */
 void CompChassis::autonomousPeriodic()
 {
 	char str[80];
@@ -38,11 +63,23 @@ void CompChassis::autonomousPeriodic()
 	DriverStation::ReportError(str);
 }
 
+/**
+ * Method that is called at the beginning of TeleOp. It will be called once
+ * and should initalize and set the defaults for the Robot. Overrides
+ * from BaseDrive.hpp
+ */
 void CompChassis::teleopInit()
 {
+	leftTalonMaster->SetSelectedSensorPosition(0, 0, 10);
+	rightTalonMaster->SetSelectedSensorPosition(0, 0, 10);
 
 }
 
+/**
+ * Called in a loop from Robot.cpp. It should include general operations for
+ * driving the robot, such as joystick input, motor output, and reading
+ * various sensor values. Overrides from BaseDrive.hpp
+ */
 void CompChassis::teleopPeriodic()
 {
 //	 This works:
