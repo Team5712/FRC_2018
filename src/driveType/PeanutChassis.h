@@ -41,7 +41,11 @@ private:
 	// Values specific to this class
 	double leftBias = 0.0; // Used to drive straight. Pre-defined and tested
 	double rightBias = 0.0;
-
+	int distance = 18.85*10;
+	int leftTraveled = 0;
+	int rightTraveled = 0;
+	const double leftRatio = (6*M_PI)/505;
+	const double rightRatio = (6*M_PI)/505;
 };
 
 #endif /* SRC_DRIVETYPE_PEANUTCHASSIS_H_ */
