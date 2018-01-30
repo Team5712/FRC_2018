@@ -39,6 +39,7 @@ public:
 	// ---- END ROBOT.CPP METHODS ----
 
 	virtual void driveStraight(double speed) = 0;
+	virtual float getRatio() = 0;
 
 	/**
 	 * This will return the value of the axis specified by the given index.
@@ -56,7 +57,6 @@ public:
 		// TODO: Verify the axis mappings (what is 0, 1, 2, etc.?)
 		return joystick->GetRawAxis(axisNum);
 	}
-
 protected:
 //	// These ARRAYS will store the port mappings for the motor(s)
 //	const int *LEFT_MOTOR_PORTS; // Will act as an array in child classes
@@ -70,7 +70,15 @@ protected:
 
 	AHRS *gyro;
 
+	// peanut chassis
+	// radius - 3 in
+	// ticks / revolution - 515
 
+	// competition chassis
+	// radius - 2 3/16 in
+
+	// multiply ratio by the distance in inches you want to go
+	// (ticks / 2r*pi) * distance
 
 private:
 

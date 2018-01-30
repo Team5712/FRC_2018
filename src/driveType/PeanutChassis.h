@@ -29,6 +29,7 @@ public:
 
 	// Overwritten from BaseDrive.h
 	void driveStraight(double speed) override;
+	float getRatio() override;
 
 private:
 
@@ -44,8 +45,14 @@ private:
 	int distance = 18.85*10;
 	int leftTraveled = 0;
 	int rightTraveled = 0;
-	const double leftRatio = (6*M_PI)/505;
-	const double rightRatio = (6*M_PI)/505;
+
+	// Constants
+	unsigned const int TICKS = 515;
+	unsigned const int WHEEL_RADIUS = 3;
+	const float RATIO = (TICKS / (2 * M_PI * WHEEL_RADIUS));
+//	const double leftRatio = (6*M_PI)/505;
+//	const double rightRatio = (6*M_PI)/505;
+
 };
 
 #endif /* SRC_DRIVETYPE_PEANUTCHASSIS_H_ */

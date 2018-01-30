@@ -8,6 +8,10 @@
  * the constructor will continue to run and may return unexpected
  * or incorrect values. Instead, start the timer in the designated
  * init() method (autonomousInit() or teleopInit()).
+ *
+ * @param ticks - number of ticks/revolution on the wheel
+ * @param wheel_radius - the radius of the wheels
+ *
  */
 PeanutChassis::PeanutChassis()
 {
@@ -70,12 +74,12 @@ void PeanutChassis::autonomousInit()
 void PeanutChassis::autonomousPeriodic()
 {
 	//int initialVal = leftTalon->GetSelectedSensorPosition(0);
-	leftTraveled = leftTalon->GetSelectedSensorPosition(0) * leftRatio;
-	rightTraveled = rightTalon->GetSelectedSensorPosition(0) * rightRatio;
+	leftTraveled = leftTalon->GetSelectedSensorPosition(0) * RATIO;
+	rightTraveled = rightTalon->GetSelectedSensorPosition(0) * RATIO;
 
-	char str2[80];
-	sprintf(str2, "value of leftTraveled: %d", leftTraveled);
-	DriverStation::ReportError(str2);
+//	char str2[80];
+//	sprintf(str2, "value of leftTraveled: %d", leftTraveled);
+//	DriverStation::ReportError(str2);
 	if(abs(leftTraveled) < distance)
 	{
 		TankDrive(0.3, 0.3);
@@ -85,11 +89,11 @@ void PeanutChassis::autonomousPeriodic()
 	}
 
 	// NOTE: The encoder values return as an INTEGER, not a double
-	char str[80];
-	sprintf(str, "L = %d, R = %d", leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0));
-	DriverStation::ReportError(str);
-	sprintf(str, "gyro: %f", gyro->GetYaw());
-	DriverStation::ReportError(str);
+//	char str[80];
+//	sprintf(str, "L = %d, R = %d", leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0));
+//	DriverStation::ReportError(str);
+//	sprintf(str, "gyro: %f", gyro->GetYaw());
+//	DriverStation::ReportError(str);
 
 }
 
@@ -203,6 +207,20 @@ void PeanutChassis::TankDrive(double leftSpeed, double rightSpeed, bool squaredI
 void PeanutChassis::driveStraight(double speed)
 {
 	TankDrive(speed * leftBias, speed * rightBias);
+}
+
+/**
+ * This will return the constant RATIO for the Peanut Chassis.
+ * The ratio can be multiplied by the
+ * desired distance (in inches) to return the number of ticks needed
+ * to drive said distance.
+ *
+ * @return
+ * A float value of the pre-defined ratio.
+ */
+float PeanutChassis::getRatio()
+{
+	return RATIO;
 }
 
 /*

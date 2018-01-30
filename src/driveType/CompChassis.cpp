@@ -11,6 +11,7 @@
  */
 CompChassis::CompChassis()
 {
+
 	// Though this shows an error, it will still build
 	leftTalonMaster = new WPI_TalonSRX(2);
 	rightTalonMaster = new WPI_TalonSRX(1);
@@ -160,6 +161,20 @@ void CompChassis::TankDrive(double leftSpeed, double rightSpeed, bool squaredInp
 void CompChassis::driveStraight(double speed)
 {
 	TankDrive(speed + leftBias, speed + rightBias);
+}
+
+/**
+ * This will return the constant RATIO for the Competition Chassis.
+ * The ratio can be multiplied by the
+ * desired distance (in inches) to return the number of ticks needed
+ * to drive said distance.
+ *
+ * @return
+ * A float value of the pre-defined ratio.
+ */
+float CompChassis::getRatio()
+{
+	return RATIO;
 }
 
 /*

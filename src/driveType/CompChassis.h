@@ -3,6 +3,7 @@
 
 #include <driveType/BaseDrive.hpp>
 #include "ctre/Phoenix.h"
+#include <math.h>
 
 
 //using namespace CTRE::Phoenix::MotorControl::CAN;
@@ -27,7 +28,9 @@ public:
 	void teleopPeriodic() override;
 	// ---- END ROBOT.CPP METHODS ----
 
+	// Overritten from BaseDrive.hpp
 	void driveStraight(double speed) override;
+	float getRatio() override;
 
 private:
 	// Probably have multiple motors, so declare master / slaves here
@@ -36,6 +39,11 @@ private:
 
 	double leftBias = 0.0; // Bias used to drive straight
 	double rightBias = 0.0;
+
+	// Constants
+	unsigned const int TICKS = 515;
+	unsigned const int WHEEL_RADIUS = 2.1875;
+	const float RATIO = (TICKS / (2 * M_PI * WHEEL_RADIUS));
 
 };
 
