@@ -177,6 +177,20 @@ float CompChassis::getRatio()
 	return RATIO;
 }
 
+/**
+ * This will return the encoder ticks for the left and right master motors. It will
+ * return as a double pointer, but should be used an array. The first index [0]
+ * is the left encoder tick count, and the second index [1] is the right
+ * encoder tick count;
+ *
+ * @return
+ * A double pointer that contains both encoder values.
+ */
+double* CompChassis::getEncoderValues()
+{
+	return new double[leftTalonMaster->GetSelectedSensorPosition(0), rightTalonMaster->GetSelectedSensorPosition(0)];
+}
+
 /*
  * These methods will use the default functionality defined in BaseDrive.hpp:
  *

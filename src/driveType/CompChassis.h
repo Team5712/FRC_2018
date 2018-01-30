@@ -31,6 +31,8 @@ public:
 	// Overritten from BaseDrive.hpp
 	void driveStraight(double speed) override;
 	float getRatio() override;
+	double* getEncoderValues() override; // Pointer will be used as an array
+
 
 private:
 	// Probably have multiple motors, so declare master / slaves here

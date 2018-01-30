@@ -30,6 +30,8 @@ public:
 	// Overwritten from BaseDrive.h
 	void driveStraight(double speed) override;
 	float getRatio() override;
+	double* getEncoderValues() override; // Pointer will be used as an array
+
 
 private:
 

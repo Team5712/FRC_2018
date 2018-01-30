@@ -40,6 +40,7 @@ public:
 
 	virtual void driveStraight(double speed) = 0;
 	virtual float getRatio() = 0;
+	virtual double* getEncoderValues() = 0; // Pointer will be used as an array
 
 	/**
 	 * This will return the value of the axis specified by the given index.
