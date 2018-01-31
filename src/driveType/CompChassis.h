@@ -4,6 +4,7 @@
 #include <driveType/BaseDrive.hpp>
 #include "ctre/Phoenix.h"
 #include <math.h>
+#include "../Constants.h"
 
 
 //using namespace CTRE::Phoenix::MotorControl::CAN;
@@ -21,31 +22,38 @@ public:
 	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) override;
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
-	// ---- ROBOT.CPP METHODS ----
-	void autonomousInit() override;
-	void autonomousPeriodic() override;
-	void teleopInit() override;
-	void teleopPeriodic() override;
-	// ---- END ROBOT.CPP METHODS ----
+//	// DEPRECATED
+//	// ---- ROBOT.CPP METHODS ----
+//	void autonomousInit() override;
+//	void autonomousPeriodic() override;
+//	void teleopInit() override;
+//	void teleopPeriodic() override;
+//	// ---- END ROBOT.CPP METHODS ----
 
 	// Overritten from BaseDrive.hpp
 	void driveStraight(double speed) override;
-	float getRatio() override;
 	double* getEncoderValues() override; // Pointer will be used as an array
+	float getGyroYaw() override;
 
 
 private:
 	// Probably have multiple motors, so declare master / slaves here
-	WPI_TalonSRX *leftTalonMaster;
-	WPI_TalonSRX *rightTalonMaster;
+	WPI_TalonSRX *l_master;
+	WPI_TalonSRX *r_master;
 
-	double leftBias = 0.0; // Bias used to drive straight
-	double rightBias = 0.0;
+	WPI_VictorSPX *l_slave1;
+	WPI_VictorSPX *l_slave2;
+	WPI_VictorSPX *l_slave3;
 
-	// Constants
-	unsigned const int TICKS = 515;
-	unsigned const int WHEEL_RADIUS = 2.1875;
-	const float RATIO = (TICKS / (2 * M_PI * WHEEL_RADIUS));
+	WPI_VictorSPX *r_slave1;
+	WPI_VictorSPX *r_slave2;
+	WPI_VictorSPX *r_slave3;
+
+	WPI_TalonSRX *lift_master;
+
+	AnalogPotentiometer *pot;
+
+
 
 };
 

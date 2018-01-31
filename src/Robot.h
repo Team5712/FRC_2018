@@ -3,10 +3,19 @@
 
 // Order imports based on most local -> global
 
+#include "autonomousModes/AutoBase.hpp"
+
 #include <driveType/BaseDrive.hpp>
 #include "driveType/PeanutChassis.h"
 #include "driveType/CompChassis.h"
 #include "WPILib.h"
+#include "SDInterface.h"
+#include "autonomousModes/AutoLeft.h"
+#include "autonomousModes/AutoMiddle.h"
+#include "autonomousModes/AutoRight.h"
+#include "StartingPosition.h"
+#include <iostream>
+#include <string>
 //#include <iostream>
 //#include <string>
 //#include <cmath>
@@ -19,12 +28,12 @@
 //#include "./driveType/BaseDrive.h"
 //#include "Joystick.h"
 
-
-class Robot : public frc::IterativeRobot
-{
+class Robot: public frc::IterativeRobot {
 public:
 	Robot();
 	~Robot();
+
+	StartingPosition current_position = StartingPosition::LEFT;
 
 	// Basic methods
 	void RobotInit();
@@ -39,13 +48,11 @@ public:
 //	void TestInit();
 //	void TestPeriodic();
 
-
-
 private:
+	AutoBase *autoMode;
+	SDInterface sdinterface;
 	BaseDrive *drive;
 
 };
-
-
 
 #endif /* SRC_ROBOT_H_ */

@@ -31,16 +31,19 @@ public:
 	virtual void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) = 0;
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
-	// ---- ROBOT.CPP METHODS ----
-	virtual void autonomousInit() = 0;
-	virtual void autonomousPeriodic() = 0;
-	virtual void teleopInit() = 0;
-	virtual void teleopPeriodic() = 0;
-	// ---- END ROBOT.CPP METHODS ----
+//	// DEPRECATED:
+//	// ---- ROBOT.CPP METHODS ----
+//	virtual void autonomousInit() = 0;
+//	virtual void autonomousPeriodic() = 0;
+//	virtual void teleopInit() = 0;
+//	virtual void teleopPeriodic() = 0;
+//	// ---- END ROBOT.CPP METHODS ----
 
 	virtual void driveStraight(double speed) = 0;
-	virtual float getRatio() = 0;
 	virtual double* getEncoderValues() = 0; // Pointer will be used as an array
+	virtual float getGyroYaw() = 0;
+
+	AnalogPotentiometer *pot;
 
 	/**
 	 * This will return the value of the axis specified by the given index.

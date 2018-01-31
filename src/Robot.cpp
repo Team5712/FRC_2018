@@ -1,10 +1,13 @@
 #include "Robot.h"
-#include <iostream>
 
 #define IS_COMPETITION false
 
+
 Robot::Robot()
 {
+
+	autoMode = 0; // Temporary value until Autonomous Init()
+
 
 	#if IS_COMPETITION
 		drive = new CompChassis();
@@ -13,6 +16,7 @@ Robot::Robot()
 	#endif
 
 
+    current_position = sdinterface.getStartingPosition();
 }
 
 Robot::~Robot()
@@ -27,22 +31,40 @@ void Robot::RobotInit()
 
 void Robot::AutonomousInit()
 {
-	drive->autonomousInit();
+	// Stores a string of the switch and scale, i.e. "LRL", "LLR"
+	// Directions are based on the direction of the team
+	// (https://wpilib.screenstepslive.com/s/currentCS/m/getting_started/l/826278-2018-game-data-details)
+	std::string positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+
+	// Choose the autonomous mode based upon the game data [string: "LRL"] "Fitting it" - Matthew
+	if(current_position == StartingPosition::LEFT)
+	{
+		autoMode = new AutoLeft(drive);
+	}
+	else if(current_position == StartingPosition::MIDDLE)
+	{
+		autoMode = new AutoMiddle(drive);
+	}
+	else if(current_position == StartingPosition::RIGHT)
+	{
+		autoMode = new AutoRight(drive);
+	}
+
+	autoMode->init();
+
 }
 
 void Robot::AutonomousPeriodic()
 {
-	drive->autonomousPeriodic();
+	autoMode->run();
 }
 
 void Robot::TeleopInit()
 {
-	drive->teleopInit();
 }
 
 void Robot::TeleopPeriodic()
 {
-	drive->teleopPeriodic();
 }
 
 START_ROBOT_CLASS(Robot)

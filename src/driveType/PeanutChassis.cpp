@@ -26,6 +26,7 @@ PeanutChassis::PeanutChassis()
 
 	timer = new Timer();
 
+	// channel, fullrange, offset
 	pot = new AnalogPotentiometer(0, 1, 0);
 
 	// Define the settings for the encoders
@@ -50,86 +51,86 @@ PeanutChassis::~PeanutChassis()
 
 // ---- ROBOT.CPP METHODS ----
 
-/**
- * Called by Robot.cpp when the Autonomous mode was initalized. Operations
- * may include resetting the value of encoders, starting timers, or zeroing
- * in the gyro. Overrides from BaseDrive.hpp
- */
-void PeanutChassis::autonomousInit()
-{
-	gyro->ZeroYaw();
-	leftTalon->SetSelectedSensorPosition(0, 0, 10);
-	rightTalon->SetSelectedSensorPosition(0, 0, 10);
-
-	timer->Reset();
-	timer->Start();
-
-}
-
-/**
- * Called by Robot.cpp during autonomous. This is a looped function and will
- * be caused every cycle of the Robot. This should include all of the
- * operations for autonomous. Overrides from BaseDrive.hpp
- */
-void PeanutChassis::autonomousPeriodic()
-{
-	//int initialVal = leftTalon->GetSelectedSensorPosition(0);
-	leftTraveled = leftTalon->GetSelectedSensorPosition(0) * RATIO;
-	rightTraveled = rightTalon->GetSelectedSensorPosition(0) * RATIO;
-
-//	char str2[80];
-//	sprintf(str2, "value of leftTraveled: %d", leftTraveled);
-//	DriverStation::ReportError(str2);
-	if(abs(leftTraveled) < distance)
-	{
-		TankDrive(0.3, 0.3);
-	} else
-	{
-		TankDrive(0.0, 0.0);
-	}
-
-	// NOTE: The encoder values return as an INTEGER, not a double
-//	char str[80];
+///**
+// * Called by Robot.cpp when the Autonomous mode was initalized. Operations
+// * may include resetting the value of encoders, starting timers, or zeroing
+// * in the gyro. Overrides from BaseDrive.hpp
+// */
+//void PeanutChassis::autonomousInit()
+//{
+//	gyro->ZeroYaw();
+//	leftTalon->SetSelectedSensorPosition(0, 0, 10);
+//	rightTalon->SetSelectedSensorPosition(0, 0, 10);
+//
+//	timer->Reset();
+//	timer->Start();
+//
+//}
+//
+///**
+// * Called by Robot.cpp during autonomous. This is a looped function and will
+// * be caused every cycle of the Robot. This should include all of the
+// * operations for autonomous. Overrides from BaseDrive.hpp
+// */
+//void PeanutChassis::autonomousPeriodic()
+//{
+//	//int initialVal = leftTalon->GetSelectedSensorPosition(0);
+//	leftTraveled = leftTalon->GetSelectedSensorPosition(0) * Constants::PRATIO;
+//	rightTraveled = rightTalon->GetSelectedSensorPosition(0) * Constants::PRATIO;
+//
+////	char str2[80];
+////	sprintf(str2, "value of leftTraveled: %d", leftTraveled);
+////	DriverStation::ReportError(str2);
+//	if(abs(leftTraveled) < distance)
+//	{
+//		TankDrive(0.3, 0.3);
+//	} else
+//	{
+//		TankDrive(0.0, 0.0);
+//	}
+//
+//	// NOTE: The encoder values return as an INTEGER, not a double
+////	char str[80];
+////	sprintf(str, "L = %d, R = %d", leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0));
+////	DriverStation::ReportError(str);
+////	sprintf(str, "gyro: %f", gyro->GetYaw());
+////	DriverStation::ReportError(str);
+//
+//}
+//
+///**
+// * Method that is called at the beginning of TeleOp. It will be called once
+// * and should initalize and set the defaults for the Robot. Overrides
+// * from BaseDrive.hpp
+// */
+//void PeanutChassis::teleopInit()
+//{
+//	leftTalon->SetSelectedSensorPosition(0, 0, 10);
+//	rightTalon->SetSelectedSensorPosition(0, 0, 10);
+//}
+//
+///**
+// * Called in a loop from Robot.cpp. It should include general operations for
+// * driving the robot, such as joystick input, motor output, and reading
+// * various sensor values. Overrides from BaseDrive.hpp
+// */
+//void PeanutChassis::teleopPeriodic()
+//{
+////	char str[80];
+////	sprintf(str, "Message from peanut");
+////	DriverStation::ReportError("Message from Peanut chassis");
+//
+//	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
+//
+//	//double val = pot->Get();
+//
+//	char str[128];
+//	//sprintf(str,"Snoopy is smokin pot at: %f", val);
+//	//DriverStation::ReportError(str);
 //	sprintf(str, "L = %d, R = %d", leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0));
 //	DriverStation::ReportError(str);
-//	sprintf(str, "gyro: %f", gyro->GetYaw());
-//	DriverStation::ReportError(str);
-
-}
-
-/**
- * Method that is called at the beginning of TeleOp. It will be called once
- * and should initalize and set the defaults for the Robot. Overrides
- * from BaseDrive.hpp
- */
-void PeanutChassis::teleopInit()
-{
-	leftTalon->SetSelectedSensorPosition(0, 0, 10);
-	rightTalon->SetSelectedSensorPosition(0, 0, 10);
-}
-
-/**
- * Called in a loop from Robot.cpp. It should include general operations for
- * driving the robot, such as joystick input, motor output, and reading
- * various sensor values. Overrides from BaseDrive.hpp
- */
-void PeanutChassis::teleopPeriodic()
-{
-//	char str[80];
-//	sprintf(str, "Message from peanut");
-//	DriverStation::ReportError("Message from Peanut chassis");
-
-	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
-
-	//double val = pot->Get();
-
-	char str[128];
-	//sprintf(str,"Snoopy is smokin pot at: %f", val);
-	//DriverStation::ReportError(str);
-	sprintf(str, "L = %d, R = %d", leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0));
-	DriverStation::ReportError(str);
-
-}
+//
+//}
 
 // ---- END ROBOT.CPP METHODS ----
 
@@ -210,20 +211,6 @@ void PeanutChassis::driveStraight(double speed)
 }
 
 /**
- * This will return the constant RATIO for the Peanut Chassis.
- * The ratio can be multiplied by the
- * desired distance (in inches) to return the number of ticks needed
- * to drive said distance.
- *
- * @return
- * A float value of the pre-defined ratio.
- */
-float PeanutChassis::getRatio()
-{
-	return RATIO;
-}
-
-/**
  * This will return the encoder ticks for the left and right motors. It will
  * return as a double pointer, but should be used an array. The first index [0]
  * is the left encoder tick count, and the second index [1] is the right
@@ -235,6 +222,18 @@ float PeanutChassis::getRatio()
 double* PeanutChassis::getEncoderValues()
 {
 	return new double[leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0)];
+}
+
+/**
+ * Returns a float representing the yaw (or angle) returned by the Gyro on
+ * the robot.
+ *
+ * @return
+ * A float from -180 to +180 representing the degree that the robot is facing.
+ */
+float PeanutChassis::getGyroYaw()
+{
+	return gyro->GetYaw();
 }
 
 /*
