@@ -2,9 +2,9 @@
 #define SRC_DRIVETYPE_COMPCHASSIS_H_
 
 #include <driveType/BaseDrive.hpp>
+#include "../Constants.h"
 #include "ctre/Phoenix.h"
 #include <math.h>
-#include "../Constants.h"
 
 
 //using namespace CTRE::Phoenix::MotorControl::CAN;
@@ -20,6 +20,12 @@ public:
 	void ArcadeDrive(double xSpeed, double zRotation, bool squaredInputs = true) override;
 	void CurvatureDrive(double xSpeed, double zRotation, bool isQuickTurn) override;
 	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) override;
+
+	void autonomousInit() override;
+	void autonomousPeriodic() override;
+	void teleopInit() override;
+	void teleopPeriodic() override;
+
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
 //	// DEPRECATED
@@ -48,6 +54,9 @@ private:
 	WPI_VictorSPX *r_slave1;
 	WPI_VictorSPX *r_slave2;
 	WPI_VictorSPX *r_slave3;
+
+	WPI_VictorSPX *l_intake;
+	WPI_VictorSPX *r_intake;
 
 	WPI_TalonSRX *lift_master;
 

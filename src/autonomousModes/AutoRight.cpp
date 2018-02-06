@@ -22,6 +22,22 @@ void AutoRight::init() {
 	char str2[80];
 	sprintf(str2, "value of leftTraveled:");
 	DriverStation::ReportError(str2);
+
+	std::string positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+
+//	// opposite sides
+//	if(positions.at(0) == "L" && positions.at(1) == "L") {
+//		crossLine();
+//
+//		// scale
+//	} else if(positions.at(1) == "R") {
+//
+//		// switch
+//	} else if(positions.at(0) == "R") {
+//
+//	}
+
+
 }
 
 

@@ -22,6 +22,19 @@ void AutoMiddle::init() {
 	char str2[80];
 	sprintf(str2, "value of leftTraveled:");
 	DriverStation::ReportError(str2);
+
+	std::string positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+
+//	// switch right
+//	if(positions.at(0) == "R") {
+//
+//	}
+//	// switch left
+//	if(positions.at(0) == "L") {
+//
+//	}
+
+
 }
 
 

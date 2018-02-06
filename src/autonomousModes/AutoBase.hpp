@@ -76,15 +76,41 @@ public:
 	}
 
 	// stop the robot and rotate it at a given angle
-	void turn(double degrees)
+	void turn(double degrees, double power)
 	{
 		drive->TankDrive(0.0, 0.0, false);
+		drive->gyro->ZeroYaw();
 
-		while(drive->getGyroYaw()) {
-			drive->TankDrive(0.0, 0.0, false);
+		// turning right
+		if(degrees > 0) {
+
+			// give left motor power
+			while(drive->getGyroYaw() < degrees) {
+				drive->TankDrive(abs(power), 0.0, true);
+			}
+
+		} else  {
+
+			while(drive->getGyroYaw() > degrees) {
+				drive->TankDrive(0.0, abs(power), true);
+			}
 		}
 
 		drive->TankDrive(0.0, 0.0, false);
+	}
+
+	void driveForward(double inches) {
+		drive->TankDrive(0.0 , 0.0, false);
+
+		while(drive->getEncoderValues()[0] < inches * Constants::CRATIO && drive->getEncoderValues()[1] < inches * Constants::CRATIO) {
+			drive->TankDrive(0.0 , 0.0, true);
+		}
+
+		drive->TankDrive(0.0 , 0.0, false);
+	}
+
+	void crossLine() {
+		driveForward(Constants::D_LINE + 20);
 	}
 
 	virtual void init() = 0;

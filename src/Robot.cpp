@@ -2,69 +2,64 @@
 
 #define IS_COMPETITION false
 
-
-Robot::Robot()
-{
+Robot::Robot() {
 
 	autoMode = 0; // Temporary value until Autonomous Init()
 
+#if IS_COMPETITION
+	drive = new CompChassis();
+#else
+	drive = new PeanutChassis();
+#endif
 
-	#if IS_COMPETITION
-		drive = new CompChassis();
-	#else
-		drive = new PeanutChassis();
-	#endif
-
-
-    current_position = sdinterface.getStartingPosition();
+	current_position = sdinterface.getStartingPosition();
 }
 
-Robot::~Robot()
-{
+Robot::~Robot() {
 
 }
 
-void Robot::RobotInit()
-{
+void Robot::RobotInit() {
 
 }
 
-void Robot::AutonomousInit()
-{
+void Robot::AutonomousInit() {
 	// Stores a string of the switch and scale, i.e. "LRL", "LLR"
 	// Directions are based on the direction of the team
 	// (https://wpilib.screenstepslive.com/s/currentCS/m/getting_started/l/826278-2018-game-data-details)
-	std::string positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+
+	current_position = sdinterface.getStartingPosition();
 
 	// Choose the autonomous mode based upon the game data [string: "LRL"] "Fitting it" - Matthew
-	if(current_position == StartingPosition::LEFT)
-	{
+	if (current_position == StartingPosition::LEFT) {
 		autoMode = new AutoLeft(drive);
-	}
-	else if(current_position == StartingPosition::MIDDLE)
-	{
+
+	} else if (current_position == StartingPosition::MIDDLE) {
 		autoMode = new AutoMiddle(drive);
-	}
-	else if(current_position == StartingPosition::RIGHT)
-	{
+
+	} else if (current_position == StartingPosition::RIGHT) {
 		autoMode = new AutoRight(drive);
+
+
 	}
 
 	autoMode->init();
 
 }
 
-void Robot::AutonomousPeriodic()
-{
-	autoMode->run();
+void Robot::AutonomousPeriodic() {
+//	autoMode->run();
+//
+//	sdinterface.getStartingPosition();
+	drive->autonomousPeriodic();
 }
 
-void Robot::TeleopInit()
-{
+void Robot::TeleopInit() {
+	drive->teleopPeriodic();
 }
 
-void Robot::TeleopPeriodic()
-{
+void Robot::TeleopPeriodic() {
+	drive->teleopPeriodic();
 }
 
 START_ROBOT_CLASS(Robot)

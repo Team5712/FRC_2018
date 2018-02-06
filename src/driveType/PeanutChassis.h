@@ -2,8 +2,8 @@
 #define SRC_DRIVETYPE_PEANUTCHASSIS_H_
 
 #include <driveType/BaseDrive.hpp>
-#include "ctre/Phoenix.h"
 #include "../Constants.h"
+#include "ctre/Phoenix.h"
 
 //using namespace CTRE::Phoenix::MotorControl::CAN;
 
@@ -34,6 +34,11 @@ public:
 	double* getEncoderValues() override; // Pointer will be used as an array
 	float getGyroYaw() override;
 
+	void autonomousInit() override;
+	void autonomousPeriodic() override;
+	void teleopInit() override;
+	void teleopPeriodic() override;
+
 
 private:
 
@@ -42,17 +47,12 @@ private:
 
 	Timer *timer;
 
-	// Values specific to this class
-	double leftBias = 0.0; // Used to drive straight. Pre-defined and tested
-	double rightBias = 0.0;
 	int distance = 18.85*10;
 	int leftTraveled = 0;
 	int rightTraveled = 0;
 
 	// Constants
 
-//	const double leftRatio = (6*M_PI)/505;
-//	const double rightRatio = (6*M_PI)/505;
 
 };
 

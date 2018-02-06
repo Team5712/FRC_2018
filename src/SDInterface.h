@@ -16,6 +16,7 @@
 #include <SmartDashboard/SmartDashboard.h>
 #include "ctre/phoenix/MotorControl/CAN/TalonSRX.h"
 #include "StartingPosition.h"
+#include <iostream>
 
 class SDInterface {
 public:
@@ -27,8 +28,7 @@ public:
 	const std::string auto_name_left = "Left";
 	const std::string auto_name_middle = "Middle";
 	const std::string auto_name_right = "Right";
-	std::string autoSelected;
-
+	std::string autoSelected = "";
 
 	StartingPosition getStartingPosition();
 

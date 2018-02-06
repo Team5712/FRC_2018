@@ -1,6 +1,5 @@
 #include "driveType/CompChassis.h"
-#include "WPILib.h"
-
+#include <iostream>
 /**
  * Initalize the objects needed for this Chassis type here. Due note that
  * these operations are called in RobotInit(), and will take effect as
@@ -9,21 +8,23 @@
  * or incorrect values. Instead, start the timer in the designated
  * init() method (autonomousInit() or teleopInit()).
  */
-CompChassis::CompChassis()
-{
+CompChassis::CompChassis() {
 
-	l_master = new WPI_TalonSRX(2);
-	r_master = new WPI_TalonSRX(1);
+	l_master = new WPI_TalonSRX(1);
+	r_master = new WPI_TalonSRX(5);
 
-	l_slave1 =  new WPI_VictorSPX(0);
-	l_slave2 = new WPI_VictorSPX(0);
-	l_slave3 = new WPI_VictorSPX(0);
+	l_slave1 = new WPI_VictorSPX(2);
+	l_slave2 = new WPI_VictorSPX(3);
+	l_slave3 = new WPI_VictorSPX(4);
 
-	r_slave1 = new WPI_VictorSPX(0);
-	r_slave2 = new WPI_VictorSPX(0);
-	r_slave3 = new WPI_VictorSPX(0);
+	r_slave1 = new WPI_VictorSPX(6);
+	r_slave2 = new WPI_VictorSPX(7);
+	r_slave3 = new WPI_VictorSPX(8);
 
-	lift_master = new WPI_TalonSRX(0);
+	l_intake = new WPI_VictorSPX(9);
+	r_intake = new WPI_VictorSPX(10);
+
+	lift_master = new WPI_TalonSRX(11);
 
 	drive = new DifferentialDrive(*l_master, *r_master);
 
@@ -31,19 +32,26 @@ CompChassis::CompChassis()
 
 	gyro = new AHRS(SPI::Port::kMXP, AHRS::kRawData, 200 /*samples/sec*/);
 
-	joystick = new Joystick(0);
+	joystick_l = new Joystick(0);
+	joystick_r = new Joystick(1);
+	joystick_lift = new Joystick(2);
 
 	// Define the slaves and configure the master to use a QuadEncoder
 	// TOOD: Make sure GetBaseID() returns the Id's for the correct master
+	l_master->SetInverted(true);
 	l_slave1->Set(ControlMode::Follower, l_master->GetBaseID());
 	l_slave2->Set(ControlMode::Follower, l_master->GetBaseID());
 	l_slave3->Set(ControlMode::Follower, l_master->GetBaseID());
 	l_master->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
 
+
 	r_slave1->Set(ControlMode::Follower, r_master->GetBaseID());
 	r_slave2->Set(ControlMode::Follower, r_master->GetBaseID());
 	r_slave3->Set(ControlMode::Follower, r_master->GetBaseID());
 	r_master->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
+
+//	l_intake->Set();
+//	r_intake->Set();
 
 }
 
@@ -52,13 +60,14 @@ CompChassis::CompChassis()
  * that originate from BaseDrive.hpp as it will delete the pointers in its
  * deconstructor.
  */
-CompChassis::~CompChassis()
-{
+CompChassis::~CompChassis() {
 	// De-allocate pointers
 	delete l_master;
 	delete r_master;
 
-	delete joystick;
+	delete joystick_l;
+	delete joystick_r;
+	delete joystick_lift;
 	delete lift_master;
 	delete pot;
 
@@ -69,8 +78,10 @@ CompChassis::~CompChassis()
 	delete r_slave1;
 	delete r_slave2;
 	delete r_slave3;
-}
 
+	delete r_intake;
+	delete l_intake;
+}
 
 // ---- ROBOT.CPP METHODS ----
 
@@ -79,51 +90,65 @@ CompChassis::~CompChassis()
 // * may include resetting the value of encoders, starting timers, or zeroing
 // * in the gyro. Overrides from BaseDrive.hpp
 // */
-//void CompChassis::autonomousInit()
-//{
-//	l_master->SetSelectedSensorPosition(0, 0, 10);
-//	r_master->SetSelectedSensorPosition(0, 0, 10);
+void CompChassis::autonomousInit() {
+	l_master->SetSelectedSensorPosition(0, 0, 10);
+	r_master->SetSelectedSensorPosition(0, 0, 10);
+
+}
+
+/**
+ * Called by Robot.cpp during autonomous. This is a looped function and will
+ * be caused every cycle of the Robot. This should include all of the
+ * operations for autonomous. Overrides from BaseDrive.hpp
+ */
+void CompChassis::autonomousPeriodic() {
+	char str[80];
+	sprintf(str, "L encoder = %d", l_master->GetSelectedSensorPosition(0));
+	DriverStation::ReportError(str);
+
+	r_master->Set(0.7);
+}
+
+/**
+ * Method that is called at the beginning of TeleOp. It will be called once
+ * and should initalize and set the defaults for the Robot. Overrides
+ * from BaseDrive.hpp
+ */
+void CompChassis::teleopInit() {
+	l_master->SetSelectedSensorPosition(0, 0, 10);
+	r_master->SetSelectedSensorPosition(0, 0, 10);
+
+	char str[80];
+	sprintf(str, "starting comp chassis");
+	DriverStation::ReportError(str);
+}
+
+/**
+ * Called in a loop from Robot.cpp. It should include general operations for
+ * driving the robot, such as joystick input, motor output, and reading
+ * various sensor values. Overrides from BaseDrive.hpp
+ */
+void CompChassis::teleopPeriodic() {
+
+
+//	drive->TankDrive(joystick_l->GetRawAxis(0), joystick_r->GetRawAxis(0));
 //
-//}
-//
-///**
-// * Called by Robot.cpp during autonomous. This is a looped function and will
-// * be caused every cycle of the Robot. This should include all of the
-// * operations for autonomous. Overrides from BaseDrive.hpp
-// */
-//void CompChassis::autonomousPeriodic()
-//{
-//	char str[80];
-//	sprintf(str, "L encoder = %d", l_master->GetSelectedSensorPosition(0));
-//	DriverStation::ReportError(str);
-//}
-//
-///**
-// * Method that is called at the beginning of TeleOp. It will be called once
-// * and should initalize and set the defaults for the Robot. Overrides
-// * from BaseDrive.hpp
-// */
-//void CompChassis::teleopInit()
-//{
-//	l_master->SetSelectedSensorPosition(0, 0, 10);
-//	r_master->SetSelectedSensorPosition(0, 0, 10);
-//
-//}
-//
-///**
-// * Called in a loop from Robot.cpp. It should include general operations for
-// * driving the robot, such as joystick input, motor output, and reading
-// * various sensor values. Overrides from BaseDrive.hpp
-// */
-//void CompChassis::teleopPeriodic()
-//{
-////	 This works:
-////	char str[80];
-////	sprintf(str, "Message from Competition Chassis");
-////	DriverStation::ReportError(str);
-//
-//	ArcadeDrive(getJoystickValue(1), getJoystickValue(0));
-//}
+//	// raise to top/scale
+//	if (joystick_lift->GetRawButtonPressed(3)) {
+//		std::cout << "3" << std::endl;
+//	}
+//	// move to switch
+//	if (joystick_lift->GetRawButtonPressed(1)) {
+//		std::cout << "1" << std::endl;
+//	}
+//	// lower to floor
+//	if (joystick_lift->GetRawButtonPressed(0)) {
+//		std::cout << "0" << std::endl;
+//	}
+
+
+	drive->TankDrive(-joystick_l->GetRawAxis(1), joystick_r->GetRawAxis(1), true);
+}
 
 // ---- END ROBOT.CPP METHODS ----
 /**
@@ -138,8 +163,8 @@ CompChassis::~CompChassis()
  * @param squaredInputs
  * default value is true, which will help limit sensitivity at slow speeds.
  */
-void CompChassis::ArcadeDrive(double xSpeed, double zRotation, bool squaredInputs)
-{
+void CompChassis::ArcadeDrive(double xSpeed, double zRotation,
+		bool squaredInputs) {
 	drive->ArcadeDrive(xSpeed, zRotation, squaredInputs);
 }
 
@@ -162,8 +187,8 @@ void CompChassis::ArcadeDrive(double xSpeed, double zRotation, bool squaredInput
  * if set, overrides constant-curvature turning for turn-in-place maneuvers.
  *
  */
-void CompChassis::CurvatureDrive(double xSpeed, double zRotation, bool isQuickTurn)
-{
+void CompChassis::CurvatureDrive(double xSpeed, double zRotation,
+		bool isQuickTurn) {
 	drive->CurvatureDrive(xSpeed, zRotation, isQuickTurn);
 }
 
@@ -179,8 +204,8 @@ void CompChassis::CurvatureDrive(double xSpeed, double zRotation, bool isQuickTu
  * @param squredInputs
  * defalut value is true. This will control how sensitive the robot is
  */
-void CompChassis::TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs)
-{
+void CompChassis::TankDrive(double leftSpeed, double rightSpeed,
+		bool squaredInputs) {
 	drive->TankDrive(leftSpeed, rightSpeed, squaredInputs);
 }
 
@@ -192,9 +217,9 @@ void CompChassis::TankDrive(double leftSpeed, double rightSpeed, bool squaredInp
  * @param speed
  * the speed that the robot should drive forward at
  */
-void CompChassis::driveStraight(double speed)
-{
-	TankDrive(speed * Constants::bias_ratio + Constants::bias_offset, speed * Constants::bias_ratio + Constants::bias_offset);
+void CompChassis::driveStraight(double speed) {
+	TankDrive(speed * Constants::bias_ratio + Constants::bias_offset,
+			speed * Constants::bias_ratio + Constants::bias_offset);
 }
 
 /**
@@ -206,9 +231,9 @@ void CompChassis::driveStraight(double speed)
  * @return
  * A double pointer that contains both encoder values.
  */
-double* CompChassis::getEncoderValues()
-{
-	return new double[l_master->GetSelectedSensorPosition(0), r_master->GetSelectedSensorPosition(0)];
+double* CompChassis::getEncoderValues() {
+	return new double[l_master->GetSelectedSensorPosition(0), r_master->GetSelectedSensorPosition(
+			0)];
 }
 
 /**
@@ -218,8 +243,7 @@ double* CompChassis::getEncoderValues()
  * @return
  * A float from -180 to +180 representing the degree that the robot is facing.
  */
-float CompChassis::getGyroYaw()
-{
+float CompChassis::getGyroYaw() {
 	return gyro->GetYaw();
 }
 

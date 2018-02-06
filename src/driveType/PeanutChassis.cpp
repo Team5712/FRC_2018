@@ -1,5 +1,6 @@
 #include "driveType/PeanutChassis.h"
 #include "WPILib.h"
+#include <iostream>
 
 /**
  * Initalize the objects needed for this Chassis type here. Due note that
@@ -20,7 +21,8 @@ PeanutChassis::PeanutChassis()
 
 	drive = new DifferentialDrive(*leftTalon, *rightTalon);
 
-	joystick = new Joystick(0);
+	joystick_l = new Joystick(0);
+	joystick_r = new Joystick(1);
 
 	gyro = new AHRS(SPI::Port::kMXP, AHRS::kRawData, 200 /*samples/sec*/);
 
@@ -47,6 +49,25 @@ PeanutChassis::~PeanutChassis()
 	delete rightTalon;
 
 	delete timer;
+}
+
+
+void PeanutChassis::autonomousInit() {
+
+}
+
+void PeanutChassis::autonomousPeriodic() {
+}
+
+void PeanutChassis::teleopInit() {
+}
+
+void PeanutChassis::teleopPeriodic() {
+
+	std::cout << joystick_l->GetRawAxis(1) << std::endl;
+	std::cout << joystick_r->GetRawAxis(1) << std::endl;
+
+	drive->TankDrive(joystick_l->GetRawAxis(1), joystick_r->GetRawAxis(1), true);
 }
 
 // ---- ROBOT.CPP METHODS ----
@@ -207,7 +228,7 @@ void PeanutChassis::TankDrive(double leftSpeed, double rightSpeed, bool squaredI
  */
 void PeanutChassis::driveStraight(double speed)
 {
-	TankDrive(speed * leftBias, speed * rightBias);
+	TankDrive(speed * Constants::bias_ratio + Constants::bias_offset, speed * Constants::bias_ratio + Constants::bias_offset);
 }
 
 /**

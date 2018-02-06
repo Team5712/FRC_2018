@@ -11,8 +11,8 @@
 // Include statements from most local to most global
 
 #include "ctre/phoenix/MotorControl/CAN/TalonSRX.h"
-#include "WPILib.h"
 #include "AHRS.h"
+#include "WPILib.h"
 
 //using namespace CTRE::Phoenix::MotorControl::CAN;
 
@@ -22,7 +22,6 @@ public:
 	virtual ~BaseDrive()
 	{
 		delete drive;
-		delete joystick;
 	};
 
 	// ---- DIFFERENTIAL_DRIVE METHODS ----
@@ -43,24 +42,15 @@ public:
 	virtual double* getEncoderValues() = 0; // Pointer will be used as an array
 	virtual float getGyroYaw() = 0;
 
+	virtual void autonomousInit() = 0;
+	virtual void autonomousPeriodic() = 0;
+	virtual void teleopInit() = 0;
+	virtual void teleopPeriodic() = 0;
+
+
+	AHRS *gyro;
 	AnalogPotentiometer *pot;
 
-	/**
-	 * This will return the value of the axis specified by the given index.
-	 * The axis indices start at 0.
-	 *
-	 * @param axisNum
-	 * the index of the desired axis value (0: twist, 1: x, 2: y)
-	 *
-	 * @return
-	 * A double value from -1.0 to +1.0 according to the joystick's position
-	 * and the requested axis.
-	 */
-	virtual double getJoystickValue(int axisNum)
-	{
-		// TODO: Verify the axis mappings (what is 0, 1, 2, etc.?)
-		return joystick->GetRawAxis(axisNum);
-	}
 protected:
 //	// These ARRAYS will store the port mappings for the motor(s)
 //	const int *LEFT_MOTOR_PORTS; // Will act as an array in child classes
@@ -70,9 +60,9 @@ protected:
 //	std::vector<TalonSRX> leftTalons; // List of left, right motors
 //	std::vector<TalonSRX> rightTalons;
 
-	Joystick *joystick;
-
-	AHRS *gyro;
+	Joystick *joystick_l;
+	Joystick *joystick_r;
+	Joystick *joystick_lift;
 
 	// peanut chassis
 	// radius - 3 in

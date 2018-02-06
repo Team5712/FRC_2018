@@ -27,9 +27,15 @@ StartingPosition SDInterface::getStartingPosition() {
 	chooser.AddObject(auto_name_right, auto_name_right);
 	frc::SmartDashboard::PutData("Auto Modes", &chooser);
 
+	if (chooser.GetSelected() == "Left") {
+		return StartingPosition::LEFT;
+	}
+	if (chooser.GetSelected() == "Middle") {
+		return StartingPosition::MIDDLE;
+	}
+	if (chooser.GetSelected() == "Right") {
+		return StartingPosition::RIGHT;
+	}
 
-	return StartingPosition::MIDDLE;
 }
-
-
 
