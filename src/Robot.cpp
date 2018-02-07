@@ -48,10 +48,9 @@ void Robot::AutonomousInit() {
 }
 
 void Robot::AutonomousPeriodic() {
-//	autoMode->run();
-//
-//	sdinterface.getStartingPosition();
-	drive->autonomousPeriodic();
+	autoMode->run();
+
+	sdinterface.getStartingPosition();
 }
 
 void Robot::TeleopInit() {
