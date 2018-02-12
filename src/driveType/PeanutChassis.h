@@ -31,7 +31,7 @@ public:
 
 	// Overwritten from BaseDrive.h
 	void driveStraight(double speed) override;
-	double* getEncoderValues() override; // Pointer will be used as an array
+	int* getEncoderValues() override; // Pointer will be used as an array
 	float getGyroYaw() override;
 
 	void autonomousInit() override;

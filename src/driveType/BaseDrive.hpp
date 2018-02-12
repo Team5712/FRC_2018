@@ -40,7 +40,7 @@ public:
 //	// ---- END ROBOT.CPP METHODS ----
 
 	virtual void driveStraight(double speed) = 0;
-	virtual double* getEncoderValues() = 0; // Pointer will be used as an array
+	virtual int* getEncoderValues() = 0; // Pointer will be used as an array
 	virtual float getGyroYaw() = 0;
 
 	virtual void autonomousInit() = 0;

@@ -224,16 +224,15 @@ void CompChassis::driveStraight(double speed) {
 
 /**
  * This will return the encoder ticks for the left and right master motors. It will
- * return as a double pointer, but should be used an array. The first index [0]
+ * return as an integer pointer, but should be used an array. The first index [0]
  * is the left encoder tick count, and the second index [1] is the right
  * encoder tick count;
  *
  * @return
- * A double pointer that contains both encoder values.
+ * An integer pointer that contains both encoder values.
  */
-double* CompChassis::getEncoderValues() {
-	return new double[l_master->GetSelectedSensorPosition(0), r_master->GetSelectedSensorPosition(
-			0)];
+int* CompChassis::getEncoderValues() {
+	return new int[l_master->GetSelectedSensorPosition(0), r_master->GetSelectedSensorPosition(0)];
 }
 
 /**
