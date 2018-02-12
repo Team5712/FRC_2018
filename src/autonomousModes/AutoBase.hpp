@@ -29,14 +29,21 @@ public:
 	{
 
 		Timer *timer = new Timer();
+		int currentL, currentR = 0;
+
+		// Take a "snapshot" of the encoder values instead of resetting them
+		currentL = drive->getEncoderValues()[0];
+		currentR = drive->getEncoderValues()[1];
 
 		timer->Reset();
 		timer->Start();
 
-		while((abs(drive->getEncoderValues()[0])) < e_left && abs((drive->getEncoderValues()[1]) < e_right) && timer->Get() < time)
+		while((abs(drive->getEncoderValues()[0] - currentL) < e_left) || (abs(drive->getEncoderValues()[1] - currentR) < e_right) || (timer->Get() < time))
 		{
-			drive->ArcadeDrive(left, right);
+			drive->TankDrive(left, right);
 		}
+		// Stop the motors since the target / time was reached
+		drive->TankDrive(0.0, 0.0);
 
 	}
 
@@ -60,20 +67,17 @@ public:
 	void timedDrive(double left, double right, int e_left, int e_right)
 	{
 
-		Timer *timer = new Timer();
 		int currentL, currentR = 0;
 
 		// Take a "snapshot" of the encoder values instead of resetting them
 		currentL = drive->getEncoderValues()[0];
 		currentR = drive->getEncoderValues()[1];
 
-		timer->Reset();
-		timer->Start();
-
-		while((drive->getEncoderValues()[0] - abs(currentL)) < e_left && (drive->getEncoderValues()[1] - currentR < abs(e_right)))
+		while((drive->getEncoderValues()[0] - abs(currentL) < e_left) && (drive->getEncoderValues()[1] - abs(currentR) < e_right))
 		{
-			drive->ArcadeDrive(left * Constants::bias_ratio + Constants::bias_offset, right * Constants::bias_ratio + Constants::bias_offset);
+			drive->TankDrive(left * Constants::bias_ratio + Constants::bias_offset, right * Constants::bias_ratio + Constants::bias_offset);
 		}
+		drive->TankDrive(0.0, 0.0); // Reached the target, so stop the motors
 
 	}
 
@@ -82,35 +86,49 @@ public:
 	{
 		std::cout << "periodic" << std::endl;
 
-		drive->TankDrive(0.0, 0.0, false);
+		drive->TankDrive(0.0, 0.0);
 		drive->gyro->ZeroYaw();
 
 		// turning right
 		if(degrees > 0) {
 			// give left motor power
 			while(drive->getGyroYaw() < degrees) {
-				std::cout << drive->getGyroYaw() << std::endl;
-				drive->TankDrive(abs(power), 0.0, true);
+				std::cout << "[AutoBase.hpp][turn()] Gyro Yaw:" << drive->getGyroYaw() << std::endl;
+				drive->TankDrive(abs(power), 0.0);
 			}
 
 		} else  {
 
 			while(drive->getGyroYaw() > degrees) {
-				drive->TankDrive(0.0, abs(power), true);
+				drive->TankDrive(0.0, abs(power));
 			}
 		}
 
-		drive->TankDrive(0.0, 0.0, false);
+		drive->TankDrive(0.0, 0.0);
 	}
 
-	void driveForward(double inches) {
-		drive->TankDrive(0.0 , 0.0, false);
+	/**
+	 * This method will drive the robot forward the given number of inches.
+	 * The distance is calculated based on the ratio defined in Constants.h.
+	 * In addition, two optional pramaeters may be supplied to dictate
+	 * how fast the robot drives forward. NOTE: This only works for
+	 * forward driving at the moment.
+	 *
+	 * @param inches
+	 * the distance in inches to travel forward
+	 * @param left
+	 * the power of the left motors on the robot
+	 * @param right
+	 * the power of the right motors on the robot
+	 */
+	void driveForward(double inches, double left = 0.5, double right = 0.5) {
+		drive->TankDrive(0.0 , 0.0);
 
 		while(drive->getEncoderValues()[0] < inches * Constants::CRATIO && drive->getEncoderValues()[1] < inches * Constants::CRATIO) {
-			drive->TankDrive(0.0 , 0.0, true);
+			drive->TankDrive(left , right);
 		}
 
-		drive->TankDrive(0.0 , 0.0, false);
+		drive->TankDrive(0.0 , 0.0);
 	}
 
 	/**

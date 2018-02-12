@@ -22,7 +22,10 @@ public:
 	// Competition chassis constants
 	static unsigned const int CTICKS = 515;
 	static unsigned const int CWHEEL_RADIUS = 2.1875;
-	static const constexpr float CRATIO = (Constants::CTICKS / (2 * M_PI * Constants::CWHEEL_RADIUS));
+	// To determine ticks to inch, use this link:
+	// http://www.robotc.net/wikiarchive/Tutorials/Arduino_Projects/Mobile_Robotics/VEX/Using_encoders_to_drive_some_distance
+	static const constexpr float CRATIO = 360 / (Constants::CWHEEL_RADIUS * 2 * M_PI);
+	//static const constexpr float CRATIO = (Constants::CTICKS / (2 * M_PI * Constants::CWHEEL_RADIUS));
 	static const constexpr double CLENGTH = 20.0; // Length of the robot from front to back TODO: MEASURE THIS
 
 
