@@ -26,6 +26,9 @@ public:
 	void teleopInit() override;
 	void teleopPeriodic() override;
 
+	WPI_TalonSRX *l_master;
+	WPI_TalonSRX *r_master;
+
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
 //	// DEPRECATED
@@ -44,8 +47,7 @@ public:
 
 private:
 	// Probably have multiple motors, so declare master / slaves here
-	WPI_TalonSRX *l_master;
-	WPI_TalonSRX *r_master;
+
 
 	WPI_VictorSPX *l_slave1;
 	WPI_VictorSPX *l_slave2;

@@ -28,6 +28,8 @@ void Robot::AutonomousInit() {
 	// Directions are based on the direction of the team
 	// (https://wpilib.screenstepslive.com/s/currentCS/m/getting_started/l/826278-2018-game-data-details)
 
+	std::cout << "start" << std::endl;
+
 	current_position = sdinterface.getStartingPosition();
 
 	// Choose the autonomous mode based upon the game data [string: "LRL"] "Fitting it" - Matthew
@@ -39,9 +41,8 @@ void Robot::AutonomousInit() {
 
 	} else if (current_position == StartingPosition::RIGHT) {
 		autoMode = new AutoRight(drive);
-
-
 	}
+
 
 	autoMode->init();
 
@@ -49,8 +50,6 @@ void Robot::AutonomousInit() {
 
 void Robot::AutonomousPeriodic() {
 	autoMode->run();
-
-	sdinterface.getStartingPosition();
 }
 
 void Robot::TeleopInit() {

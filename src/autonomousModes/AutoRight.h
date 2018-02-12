@@ -16,8 +16,10 @@ public:
 	AutoRight(BaseDrive *srcDrive);
 	virtual ~AutoRight();
 
+	// ---- AUTONOMOUS FUNCTIONS ----
 	void init() override;
 	void run() override;
+	// ------------------------------
 
 	void sideSame() override;
 	void oppositeSide() override;

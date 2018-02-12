@@ -12,15 +12,19 @@
 
 class Constants {
 public:
+
+	// Peanut chassis constants
 	static unsigned const int PEANUT_TICKS = 515;
 	static unsigned const int PEANUT_WHEEL_RADIUS = 3;
 	static const constexpr float PRATIO = (Constants::PEANUT_TICKS
 			/ (2 * M_PI * Constants::PEANUT_WHEEL_RADIUS));
 
-	// Constants
+	// Competition chassis constants
 	static unsigned const int CTICKS = 515;
 	static unsigned const int CWHEEL_RADIUS = 2.1875;
 	static const constexpr float CRATIO = (Constants::CTICKS / (2 * M_PI * Constants::CWHEEL_RADIUS));
+	static const constexpr double CLENGTH = 20.0; // Length of the robot from front to back TODO: MEASURE THIS
+
 
 	// if there is an differance in each side's driving capability, it will always be a factor of the other one, thus the ratio.
 	static double const constexpr bias_ratio = 0.0;

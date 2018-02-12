@@ -10,7 +10,7 @@
 #ifndef SRC_AUTONOMOUSMODES_AUTOLEFT_H_
 #define SRC_AUTONOMOUSMODES_AUTOLEFT_H_
 
-#include "AutoBase.hpp"
+#include <autonomousModes/AutoBase.hpp>
 #include "../driveType/BaseDrive.hpp"
 
 class AutoLeft : public AutoBase {
@@ -18,8 +18,10 @@ public:
 	AutoLeft(BaseDrive *drive);
 	virtual ~AutoLeft();
 
+	// ---- AUTONOMOUS FUNCTIONS ----
 	void init() override;
 	void run() override;
+	// ------------------------------
 
 	void sideSame() override;
 	void oppositeSide() override;

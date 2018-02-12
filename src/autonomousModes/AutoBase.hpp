@@ -10,6 +10,8 @@
 
 #include "../driveType/BaseDrive.hpp"
 #include "../Constants.h"
+#include <iostream>
+#include "ctre/Phoenix.h"
 #include "WPILib.h"
 
 class AutoBase
@@ -78,14 +80,16 @@ public:
 	// stop the robot and rotate it at a given angle
 	void turn(double degrees, double power)
 	{
+		std::cout << "periodic" << std::endl;
+
 		drive->TankDrive(0.0, 0.0, false);
 		drive->gyro->ZeroYaw();
 
 		// turning right
 		if(degrees > 0) {
-
 			// give left motor power
 			while(drive->getGyroYaw() < degrees) {
+				std::cout << drive->getGyroYaw() << std::endl;
 				drive->TankDrive(abs(power), 0.0, true);
 			}
 
@@ -109,13 +113,21 @@ public:
 		drive->TankDrive(0.0 , 0.0, false);
 	}
 
+	/**
+	 * Method that will drive the robot past the first line during autonomous,
+	 * awarding 5 points. NOTE: This should not be called by AutoMiddle.cpp
+	 * since the robot is starting in the center and runs the risk
+	 * of crashing into the Switch if this method is executed.
+	 */
 	void crossLine() {
-		driveForward(Constants::D_LINE + 20);
+		this->driveForward(Constants::D_LINE + Constants::CLENGTH);
 	}
 
 	virtual void init() = 0;
 	virtual void run() = 0;
 
+	// These methods are common operations that will be used in autonomous
+	// run, and should be overriten for each Autonomous class
 	virtual void sideSame() = 0;
 	virtual void oppositeSide() = 0;
 	/**
@@ -132,6 +144,8 @@ public:
 
 protected:
 	BaseDrive *drive;
+	std::string positions;
+	// ^ The game specific String containing switch and scale positions
 
 };
 

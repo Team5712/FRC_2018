@@ -19,28 +19,25 @@ AutoMiddle::~AutoMiddle() {
 }
 
 void AutoMiddle::init() {
-	char str2[80];
-	sprintf(str2, "value of leftTraveled:");
-	DriverStation::ReportError(str2);
+	// Store the positions of the switch and scale
+	positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
 
-	std::string positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
-
-//	// switch right
-//	if(positions.at(0) == "R") {
-//
-//	}
-//	// switch left
-//	if(positions.at(0) == "L") {
-//
-//	}
-
-
+	char msg[80];
+	sprintf(msg, "[AutoMiddle Mode]: Game specific message: \"%s\"", positions.c_str());
+	DriverStation::ReportError(msg);
 }
 
 
 void AutoMiddle::run()
 {
+	// switch right
+	if(positions.at(0) == 'R') {
 
+	}
+	// switch left
+	if(positions.at(0) == 'L') {
+
+	}
 }
 
 void AutoMiddle::sideSame()

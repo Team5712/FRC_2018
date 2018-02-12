@@ -6,6 +6,7 @@
  */
 
 #include <autonomousModes/AutoLeft.h>
+//#include "ctre/Phoenix.h"
 
 AutoLeft::AutoLeft(BaseDrive *srcDrive) {
 	
@@ -19,34 +20,37 @@ AutoLeft::~AutoLeft() {
 }
 
 void AutoLeft::init() {
-	char str2[80];
-	sprintf(str2, "value of leftTraveled:");
-	DriverStation::ReportError(str2);
 
-	std::string positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+	// Store the positions of the switch and scale
+	positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
 
-
-//	// opposite sides
-//	if(positions.at(0) == "R" && positions.at(1) == "R") {
-//		crossLine();
-//
-//		// scale
-//	} else if(positions.at(1) == "L") {
-//
-//		// switch
-//	} else if(positions.at(0) == "L") {
-//
-//	}
-
+	char msg[80];
+	sprintf(msg, "[AutoLeft Mode]: Game specific message: \"%s\"", positions.c_str());
+	DriverStation::ReportError(msg);
 
 }
+
 void AutoLeft::run() {
 
+
+	// opposite sides, so don't attempt to place cubes
+	if(positions.at(0) == 'R' && positions.at(1) == 'R') {
+		crossLine();
+
+		// scale
+	} else if(positions.at(1) == 'L') {
+
+		// switch
+	} else if(positions.at(0) == 'L') {
+
+	}
 }
+
 
 void AutoLeft::sideSame() {
 
 }
+
 void AutoLeft::oppositeSide() {
 
 }
