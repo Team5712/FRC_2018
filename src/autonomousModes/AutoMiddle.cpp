@@ -19,8 +19,7 @@ AutoMiddle::~AutoMiddle() {
 }
 
 void AutoMiddle::init() {
-	// Store the positions of the switch and scale
-	positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+
 
 	char msg[80];
 	sprintf(msg, "[AutoMiddle Mode]: Game specific message: \"%s\"", positions.c_str());
@@ -30,13 +29,26 @@ void AutoMiddle::init() {
 
 void AutoMiddle::run()
 {
+	// Store the positions of the switch and scale
+	positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+
 	// switch right
 	if(positions.at(0) == 'R') {
 
+		driveForward(10, 0.5, 0.5);
+		turn(45, 0.5);
+		driveForward(40, 0.5, 0.5);
+		turn(-45, 0.5);
+		driveForward(20, 0.5, 0.5);
 	}
 	// switch left
 	if(positions.at(0) == 'L') {
 
+		driveForward(10, 0.5, 0.5);
+		turn(-45, 0.5);
+		driveForward(40, 0.5, 0.5);
+		turn(45, 0.5);
+		driveForward(20, 0.5, 0.5);
 	}
 }
 

@@ -21,8 +21,7 @@ AutoLeft::~AutoLeft() {
 
 void AutoLeft::init() {
 
-	// Store the positions of the switch and scale
-	positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+
 
 	char msg[80];
 	sprintf(msg, "[AutoLeft Mode]: Game specific message: \"%s\"", positions.c_str());
@@ -31,19 +30,29 @@ void AutoLeft::init() {
 }
 
 void AutoLeft::run() {
-
+	// Store the positions of the switch and scale
+	positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
 
 	// opposite sides, so don't attempt to place cubes
 	if(positions.at(0) == 'R' && positions.at(1) == 'R') {
 		crossLine();
 
-		// scale
-	} else if(positions.at(1) == 'L') {
+	} // scale
+	 else if(positions.at(1) == 'L') {
+
+		 driveForward(Constants::D_START_TO_SCALE - 30);
+		 turn(40, 0.5);
+		 // shoot out cube
 
 		// switch
 	} else if(positions.at(0) == 'L') {
 
+		driveForward(Constants::D_START_TO_SWITCH + ((Constants::D_START_TO_SWITCH_END - Constants::D_START_TO_SWITCH) / 2));
+		turn(90, 0.5);
+		// shoot out cube
 	}
+
+
 }
 
 
