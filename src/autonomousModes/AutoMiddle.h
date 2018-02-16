@@ -3,14 +3,12 @@
 
 #include "autonomousModes/AutoBase.hpp"
 #include "../driveType/BaseDrive.hpp"
-#include "AHRS.h"
 
 class AutoMiddle : public AutoBase {
 
 
 public:
-	std::string start_position;
-	AutoMiddle(BaseDrive *drive, std::string position);
+	AutoMiddle(BaseDrive *drive);
 	virtual ~AutoMiddle();
 
 	// ---- AUTONOMOUS FUNCTIONS ----

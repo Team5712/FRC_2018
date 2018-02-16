@@ -43,8 +43,8 @@ public:
 			drive->TankDrive(left, right);
 		}
 		// Stop the motors since the target / time was reached
-		drive->TankDrive(0.0, 0.0);
 
+		stop();
 	}
 
 	void timedDrive(double time, double left, double right)
@@ -60,7 +60,7 @@ public:
 			drive->TankDrive(left, right);
 		}
 		// When the loop ends, stop the motors
-		drive->TankDrive(0.0, 0.0);
+		stop();
 
 	}
 
@@ -77,7 +77,7 @@ public:
 		{
 			drive->TankDrive(left * Constants::bias_ratio + Constants::bias_offset, right * Constants::bias_ratio + Constants::bias_offset);
 		}
-		drive->TankDrive(0.0, 0.0); // Reached the target, so stop the motors
+		stop(); // Reached the target, so stop the motors
 
 	}
 
@@ -86,7 +86,7 @@ public:
 	{
 		std::cout << "periodic" << std::endl;
 
-		drive->TankDrive(0.0, 0.0);
+		stop();
 		drive->gyro->ZeroYaw();
 
 		// turning right
@@ -104,7 +104,7 @@ public:
 			}
 		}
 
-		drive->TankDrive(0.0, 0.0);
+		stop();
 	}
 
 	/**
@@ -114,21 +114,72 @@ public:
 	 * how fast the robot drives forward. NOTE: This only works for
 	 * forward driving at the moment.
 	 *
+	 * @param l_value
+	 * this is the value of the left encoder recorded before this function is called. The value of
+	 * this variable will remain the same until this function is done being called within the loop
+	 * the use case of this is denoted by
+	 * l_value = leftEncoder[0] - value;
+	 *
+	 * this will effectively "reset" the value of the encoder
+	 *
+	 * @param r_value
+	 * same as l_value but on the right side
+	 *
 	 * @param inches
 	 * the distance in inches to travel forward
 	 * @param left
 	 * the power of the left motors on the robot
 	 * @param right
 	 * the power of the right motors on the robot
+	 *
+	 * @returns
+	 * 0 or 1
+	 * 0: condition not satisfied
+	 * 1: is at destination
 	 */
-	void driveForward(double inches, double left = 0.5, double right = 0.5) {
-		drive->TankDrive(0.0 , 0.0);
+	int driveForward(double l_value, double r_value, double inches, double left = 0.5, double right = 0.5) {
+		stop();
+		l_value = drive->getEncoderValues()[0] - l_value;
+		r_value = drive->getEncoderValues()[1] - r_value;
 
-		while(drive->getEncoderValues()[0] < inches * Constants::CRATIO && drive->getEncoderValues()[1] < inches * Constants::CRATIO) {
+		if(l_value < inches * Constants::CRATIO && r_value < inches * Constants::CRATIO) {
 			drive->TankDrive(left , right);
+			std::cout << "drive " << l_value << " " << r_value << std::endl;
+			return 0;
+		} else {
+			std::cout << "finished" << std::endl;
+			return 1;
 		}
+		/*finished
+finished
+finished
+drive 0 40000
+finished
+finished
+finished
+finished
+finished
+drive 0 1.04292e+06
+drive 0 49280
+drive 1.2307e+09 928
+finished
+finished
+finished
+drive 0 83664
+drive 0 56704
+finished
+drive 0 1.01584e+06
+finished
+drive 0 43416
+drive 0 59704
+finished
+finished
+finished
+finished
+		 * */
 
-		drive->TankDrive(0.0 , 0.0);
+
+		stop();
 	}
 
 	/**
@@ -137,15 +188,19 @@ public:
 	 * since the robot is starting in the center and runs the risk
 	 * of crashing into the Switch if this method is executed.
 	 */
-	void crossLine() {
-		this->driveForward(Constants::D_LINE + Constants::CLENGTH);
+	int crossLine(double l_value, double r_value) {
+		return this->driveForward(l_value, r_value, Constants::D_LINE + Constants::CLENGTH, 0.5, 0.5);
+	}
+
+	void stop() {
+		drive->TankDrive(0.0, 0.0);
 	}
 
 	virtual void init() = 0;
 	virtual void run() = 0;
 
 	// These methods are common operations that will be used in autonomous
-	// run, and should be overriten for each Autonomous class
+	// run, and should be overridden for each Autonomous class
 	virtual void sideSame() = 0;
 	virtual void oppositeSide() = 0;
 	/**
@@ -162,7 +217,7 @@ public:
 
 protected:
 	BaseDrive *drive;
-	std::string positions;
+	std::string start_position;
 	// ^ The game specific String containing switch and scale positions
 
 };

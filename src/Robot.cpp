@@ -1,5 +1,6 @@
 #include "Robot.h"
 
+// TODO: How does this work?!
 #define IS_COMPETITION false
 
 Robot::Robot() {
@@ -33,19 +34,18 @@ void Robot::AutonomousInit() {
 	// from the driver station
 	//current_position = sdinterface.getStartingPosition();
 	current_position = StartingPosition::MIDDLE;
-	std::string positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
 
 	// Choose the autonomous mode based upon the game data [string: "LRL"] "Fitting it" - Matthew
 	if (current_position == StartingPosition::LEFT) {
-		autoMode = new AutoLeft(drive, positions);
+		autoMode = new AutoLeft(drive);
 
 	} else if (current_position == StartingPosition::MIDDLE) {
-		autoMode = new AutoMiddle(drive, positions);
+		autoMode = new AutoMiddle(drive);
 
 	} else if (current_position == StartingPosition::RIGHT) {
-		autoMode = new AutoRight(drive, positions);
+		autoMode = new AutoRight(drive);
 	} else {
-		autoMode = new AutoMiddle(drive, NULL);
+		autoMode = new AutoMiddle(drive);
 	}
 
 	autoMode->init();
@@ -57,7 +57,7 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::TeleopInit() {
-	drive->teleopPeriodic();
+	drive->teleopInit();
 }
 
 void Robot::TeleopPeriodic() {

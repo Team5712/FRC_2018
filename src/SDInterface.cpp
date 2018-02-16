@@ -8,12 +8,11 @@
 #include "SDInterface.h"
 
 SDInterface::SDInterface() {
-	// TODO Auto-generated constructor stub
 	
 }
 
 SDInterface::~SDInterface() {
-	// TODO Auto-generated destructor stub
+
 }
 
 StartingPosition SDInterface::getStartingPosition() {

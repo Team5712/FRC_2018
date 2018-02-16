@@ -8,9 +8,8 @@
 #include <autonomousModes/AutoRight.h>
 //#include "ctre/Phoenix.h"
 
-AutoRight::AutoRight(BaseDrive *srcDrive, std::string pos) {
+AutoRight::AutoRight(BaseDrive *srcDrive) {
 	
-	start_position = pos;
 	// Drive from AutoBase.hpp
 	drive = srcDrive;
 }
@@ -25,7 +24,7 @@ void AutoRight::init() {
 
 
 	char msg[80];
-	sprintf(msg, "[AutoRight Mode]: Game specific message: \"%s\"", positions.c_str());
+	sprintf(msg, "[AutoRight Mode]: Game specific message: \"%s\"", start_position.c_str());
 	DriverStation::ReportError(msg);
 
 }
@@ -33,22 +32,22 @@ void AutoRight::init() {
 
 void AutoRight::run()
 {
-	// Store the positions of the switch and scale
-	positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
+	double l_value = drive->getEncoderValues()[0];
+	double r_value = drive->getEncoderValues()[1];
 
 	// opposite sides
-	if(positions.at(0) == 'L' && positions.at(1) == 'L') {
-		crossLine();
+	if(start_position.at(0) == 'L' && start_position.at(1) == 'L') {
+		crossLine(l_value, r_value);
 		// scale
-	} else if(positions.at(1) == 'R') {
+	} else if(start_position.at(1) == 'R') {
 
-		 driveForward(Constants::D_START_TO_SCALE - 30);
+		 driveForward(l_value, r_value, Constants::D_START_TO_SCALE - 30);
 		 turn(-40, 0.5);
 
 		// switch
-	} else if(positions.at(0) == 'R') {
+	} else if(start_position.at(0) == 'R') {
 
-		driveForward(Constants::D_START_TO_SWITCH + ((Constants::D_START_TO_SWITCH_END - Constants::D_START_TO_SWITCH) / 2));
+		driveForward(l_value, r_value, Constants::D_START_TO_SWITCH + ((Constants::D_START_TO_SWITCH_END - Constants::D_START_TO_SWITCH) / 2));
 		turn(-90, 0.5);
 	}
 

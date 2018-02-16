@@ -10,14 +10,11 @@
 
 #include "AutoBase.hpp"
 #include "../driveType/BaseDrive.hpp"
-#include "AHRS.h"
 
 class AutoRight : public AutoBase {
 
-	std::string start_position;
-
 public:
-	AutoRight(BaseDrive *srcDrive, std::string position);
+	AutoRight(BaseDrive *srcDrive);
 	virtual ~AutoRight();
 
 	// ---- AUTONOMOUS FUNCTIONS ----

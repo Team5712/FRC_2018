@@ -7,9 +7,8 @@
 
 #include <autonomousModes/AutoMiddle.h>
 
-AutoMiddle::AutoMiddle(BaseDrive *srcDrive, std::string pos) {
+AutoMiddle::AutoMiddle(BaseDrive *srcDrive) {
 	
-	start_position = pos;
 	// Drive from AutoBase.hpp
 	drive = srcDrive;
 
@@ -23,39 +22,47 @@ void AutoMiddle::init() {
 
 
 	char msg[80];
-	sprintf(msg, "[AutoMiddle Mode]: Game specific message: \"%s\"", positions.c_str());
+	sprintf(msg, "[AutoMiddle Mode]: Game specific message: \"%s\"", start_position.c_str());
 	DriverStation::ReportError(msg);
 }
 
 
 void AutoMiddle::run()
 {
+	double l_value = drive->getEncoderValues()[0];
+	double r_value = drive->getEncoderValues()[1];
 
-	if(start_position.empty()) {
-		crossLine();
+	// TODO: Why "or true"?
+	// Unsafe for the middle position?
+	if(start_position.empty() || true) {
+
+		// 1 meaning we've actually crossed the line
+		if(crossLine(l_value, r_value) == 1) {
+			stop();
+		}
+
+	} else {
+
+		// switch right
+		if(start_position.at(0) == 'R') {
+
+			driveForward(10, 0.5, 0.5);
+			turn(45, 0.5);
+			driveForward(40, 0.5, 0.5);
+			turn(-45, 0.5);
+			driveForward(20, 0.5, 0.5);
+		}
+		// switch left
+		if(start_position.at(0) == 'L') {
+
+			driveForward(10, 0.5, 0.5);
+			turn(-45, 0.5);
+			driveForward(40, 0.5, 0.5);
+			turn(45, 0.5);
+			driveForward(20, 0.5, 0.5);
+		}
 	}
 
-	// Store the positions of the switch and scale
-	positions = frc::DriverStation::GetInstance().GetGameSpecificMessage();
-
-	// switch right
-	if(positions.at(0) == 'R') {
-
-		driveForward(10, 0.5, 0.5);
-		turn(45, 0.5);
-		driveForward(40, 0.5, 0.5);
-		turn(-45, 0.5);
-		driveForward(20, 0.5, 0.5);
-	}
-	// switch left
-	if(positions.at(0) == 'L') {
-
-		driveForward(10, 0.5, 0.5);
-		turn(-45, 0.5);
-		driveForward(40, 0.5, 0.5);
-		turn(45, 0.5);
-		driveForward(20, 0.5, 0.5);
-	}
 }
 
 void AutoMiddle::sideSame()

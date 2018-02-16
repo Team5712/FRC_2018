@@ -12,14 +12,11 @@
 
 #include <autonomousModes/AutoBase.hpp>
 #include "../driveType/BaseDrive.hpp"
-#include "AHRS.h"
 
 class AutoLeft : public AutoBase {
 
-	std::string start_position;
-
 public:
-	AutoLeft(BaseDrive *drive, std::string position);
+	AutoLeft(BaseDrive *drive);
 	virtual ~AutoLeft();
 
 	// ---- AUTONOMOUS FUNCTIONS ----
