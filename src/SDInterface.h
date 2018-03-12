@@ -12,6 +12,7 @@
 #include <WPILib.h>
 #include <IterativeRobot.h>
 #include <LiveWindow/LiveWindow.h>
+#include "Priority.h"
 #include <SmartDashboard/SendableChooser.h>
 #include <SmartDashboard/SmartDashboard.h>
 #include "ctre/phoenix/MotorControl/CAN/TalonSRX.h"
@@ -27,13 +28,19 @@ public:
 
 
 	frc::LiveWindow* lw = LiveWindow::GetInstance();
-	frc::SendableChooser<std::string> chooser;
+	frc::SendableChooser<std::string> position_chooser;
 	const std::string auto_name_left = "Left";
 	const std::string auto_name_middle = "Middle";
 	const std::string auto_name_right = "Right";
-	std::string autoSelected = "";
+	std::string position_autoSelected = "";
+
+	frc::SendableChooser<std::string> priority_chooser;
+	const std::string priority_switch = "Switch";
+	const std::string priority_scale = "Scale";
+	std::string priority_autoSelected = "";
 
 	StartingPosition getStartingPosition();
+	Priority getPriority();
 
 
 	virtual ~SDInterface();

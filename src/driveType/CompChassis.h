@@ -9,27 +9,67 @@
 
 //using namespace CTRE::Phoenix::MotorControl::CAN;
 
-class CompChassis : public BaseDrive
+class CompChassis
 {
 public:
+
 	CompChassis();
 	virtual ~CompChassis();
 
 	// Override DifferentialDrive methods from the base drive class
 	// ---- DIFFERENTIAL_DRIVE METHODS ----
-	void ArcadeDrive(double xSpeed, double zRotation, bool squaredInputs = true) override;
-	void CurvatureDrive(double xSpeed, double zRotation, bool isQuickTurn) override;
-	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) override;
+	void ArcadeDrive(double xSpeed, double zRotation, bool squaredInputs = true);
+	void CurvatureDrive(double xSpeed, double zRotation, bool isQuickTurn);
+	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true);
 
-	void autonomousInit() override;
-	void autonomousPeriodic() override;
-	void teleopInit() override;
-	void teleopPeriodic() override;
+	void autonomousInit();
+	void autonomousPeriodic();
+	void teleopInit();
+	void teleopPeriodic();
+	void resetEncoders();
 
+	void updateLift();
+	void updateVisionButtons();
+	void updateBlinkin();
+	void updateGrippers();
 	void handleInput();
+	void updateShifter();
+	void updateIntake();
+	void updatePneumatics();
+	void updateClimber();
+
+	void setGrippers(double power);
+	void setLeftRight(double, double);
+	double getCurrentLeft();
+	double getCurrentRight();
+
+	double current_led = 0;
+	Solenoid *shifter;
+
+
+
+	DifferentialDrive *drive;
 
 	WPI_TalonSRX *l_master;
 	WPI_TalonSRX *r_master;
+	WPI_TalonSRX *lift_master;
+
+	std::shared_ptr<NetworkTable> table;
+	float left_command = 0;
+	float right_command = 0;
+
+	Spark *led;
+	Spark *led2;
+
+	AHRS *gyro;
+
+	double r_ratio = 1.05;
+
+	bool liftFloor();
+	bool liftSwitch();
+	bool liftScale();
+
+
 
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
@@ -42,13 +82,41 @@ public:
 //	// ---- END ROBOT.CPP METHODS ----
 
 	// Overritten from BaseDrive.hpp
-	void driveStraight(double speed) override;
-	int* getEncoderValues() override; // Pointer will be used as an array
-	float getGyroYaw() override;
+	void driveStraight(double speed);
+	int getLeftValue();
+	int getRightValue();
+
+	Timer match_timer;
+	bool isClimbing = false;
+
+	bool isLedTimerStart = false;
+	Timer LedTimer;
+	double led_swap_interval = 3.0;
+
+	//
+	bool isCylinderTimerStart = false;
+	Timer cylinder_timer_down;
+	double cylinder_down_wait = 1.0;
+
+
+	// timer for shooting the cube after a delay
+	bool isShoot_timer_start = false;
+	Timer shoot_timer;
+	double shoot_cube_duration = 1.0;
+	bool shootCube();
+
+
+	//bool succCube();
+
+	cs::UsbCamera camera;
+
+	DigitalInput *limitSwitch;
 
 
 private:
 	// Probably have multiple motors, so declare master / slaves here
+
+	//std::shared_ptr<NetworkTable> table;
 
 
 	WPI_VictorSPX *l_slave1;
@@ -59,27 +127,50 @@ private:
 	WPI_VictorSPX *r_slave2;
 	WPI_VictorSPX *r_slave3;
 
-	WPI_VictorSPX *l_intake;
-	WPI_VictorSPX *r_intake;
-
-	WPI_TalonSRX *lift_master;
+	WPI_VictorSPX *l_grip;
+	WPI_VictorSPX *r_grip;
 
 	AnalogPotentiometer *pot;
 
-	Spark *led;
+
+
+	Compressor *compressor;
+
+	DoubleSolenoid *cylinder;
+
+
+	DoubleSolenoid *climber;
+	bool hasCube;
+
+	bool isGrip_timerStart = false;
+	Timer grip_timer;
+
+	double pulse_interval = 0.33;
+	bool grip_isLeft = true;
+
+	bool isUp = false;
 
 	bool lift_isFloor = false;
 	bool lift_isSwitch = false;
 	bool lift_isScale = false;
 
-	double lift_potScale = 0.999845;
-	double lift_potSwitch = 1.00143;
-	double lift_potFloor = 1.00163;
+	// 36 is max
+	double lift_potScale = 45;
+	double lift_potSwitch = 320;
+	double lift_potFloor = 390;
 
-	double current_led =  0.99;
+	Joystick *l_joystick;
+	Joystick *r_joystick;
+	Joystick *joystick_lift;
 
-	int led_current = 0;
+
+
 	float led_values[100];
+
+
+	bool forward = true;
+	bool in = true;
+	bool up = true;
 
 
 

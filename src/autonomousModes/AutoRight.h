@@ -14,7 +14,7 @@
 class AutoRight : public AutoBase {
 
 public:
-	AutoRight(BaseDrive *srcDrive);
+	AutoRight(CompChassis *srcDrive, std::string);
 	virtual ~AutoRight();
 
 	// ---- AUTONOMOUS FUNCTIONS ----

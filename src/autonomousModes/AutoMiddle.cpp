@@ -7,9 +7,10 @@
 
 #include <autonomousModes/AutoMiddle.h>
 
-AutoMiddle::AutoMiddle(BaseDrive *srcDrive) {
-	
+AutoMiddle::AutoMiddle(CompChassis *srcDrive, std::string start) {
+
 	// Drive from AutoBase.hpp
+	start_position = start;
 	drive = srcDrive;
 
 }
@@ -20,72 +21,45 @@ AutoMiddle::~AutoMiddle() {
 
 void AutoMiddle::init() {
 
+	drive->resetEncoders();
+	drive->gyro->ZeroYaw();
 
 	char msg[80];
-	sprintf(msg, "[AutoMiddle Mode]: Game specific message: \"%s\"", start_position.c_str());
+	sprintf(msg, "[AutoMiddle Mode]: Game specific message: \"%s\"",
+			start_position.c_str());
 	DriverStation::ReportError(msg);
 }
 
+void AutoMiddle::run() {
 
-void AutoMiddle::run()
-{
-	double l_value = drive->getEncoderValues()[0];
-	double r_value = drive->getEncoderValues()[1];
+	drive->shifter->Set(true);
+	drive->current_led = 0.43;
 
-	// TODO: Why "or true"?
-	// Unsafe for the middle position?
-	if(start_position.empty() || true) {
+	if (start_position.at(0) == 'L') {
+		middleToLeftSwitch();
 
-		// 1 meaning we've actually crossed the line
-		if(crossLine(l_value, r_value) == 1) {
-			stop();
-		}
-
-	} else {
-
-		// switch right
-		if(start_position.at(0) == 'R') {
-
-			driveForward(10, 0.5, 0.5);
-			turn(45, 0.5);
-			driveForward(40, 0.5, 0.5);
-			turn(-45, 0.5);
-			driveForward(20, 0.5, 0.5);
-		}
-		// switch left
-		if(start_position.at(0) == 'L') {
-
-			driveForward(10, 0.5, 0.5);
-			turn(-45, 0.5);
-			driveForward(40, 0.5, 0.5);
-			turn(45, 0.5);
-			driveForward(20, 0.5, 0.5);
-		}
+	} else if (start_position.at(0) == 'R') {
+		middleToRightSwitch();
 	}
-
 }
 
-void AutoMiddle::sideSame()
-{
+void AutoMiddle::sideSame() {
 
 }
-void AutoMiddle::oppositeSide()
-{
+void AutoMiddle::oppositeSide() {
 
 }
 /**
  * left side switch
  * right side scale
  */
-void AutoMiddle::leftRight()
-{
+void AutoMiddle::leftRight() {
 
 }
 /**
  * right side switch
  * left side scale
  */
-void AutoMiddle::rightLeft()
-{
+void AutoMiddle::rightLeft() {
 
 }

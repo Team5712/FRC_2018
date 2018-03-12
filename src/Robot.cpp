@@ -1,18 +1,20 @@
 #include "Robot.h"
+// TODO check me
+#define IS_COMPETITION true
 
-// TODO: How does this work?!
-#define IS_COMPETITION false
 
 Robot::Robot() {
 
-	autoMode = 0; // Temporary value until Autonomous Init()
+	autoMode = 0;
 
-#if IS_COMPETITION
+
 	drive = new CompChassis();
-#else
-	drive = new PeanutChassis();
-#endif
-
+	//drive = new PeanutChassis();
+//#if IS_COMPETITION
+//#else
+//	drive = new PeanutChassis();
+//#endif
+	priority = sdinterface.getPriority();
 	current_position = sdinterface.getStartingPosition();
 }
 
@@ -25,31 +27,35 @@ void Robot::RobotInit() {
 }
 
 void Robot::AutonomousInit() {
+	drive->autonomousInit();
+
 	// Stores a string of the switch and scale, i.e. "LRL", "LLR"
 	// Directions are based on the direction of the team
 	// (https://wpilib.screenstepslive.com/s/currentCS/m/getting_started/l/826278-2018-game-data-details)
 
-	std::cout << "start" << std::endl;
+	std::cout << "auto init..." << std::endl;
+
 
 	// from the driver station
-	//current_position = sdinterface.getStartingPosition();
+//	current_position = sdinterface.getStartingPosition();
 	current_position = StartingPosition::MIDDLE;
+	std::string game_data = DriverStation::GetInstance().GetGameSpecificMessage();
+//	std::string game_data = "RRR";
 
 	// Choose the autonomous mode based upon the game data [string: "LRL"] "Fitting it" - Matthew
 	if (current_position == StartingPosition::LEFT) {
-		autoMode = new AutoLeft(drive);
+		autoMode = new AutoLeft(drive, game_data);
 
 	} else if (current_position == StartingPosition::MIDDLE) {
-		autoMode = new AutoMiddle(drive);
+		autoMode = new AutoMiddle(drive, game_data);
 
 	} else if (current_position == StartingPosition::RIGHT) {
-		autoMode = new AutoRight(drive);
+		autoMode = new AutoRight(drive, game_data);
 	} else {
-		autoMode = new AutoMiddle(drive);
+		autoMode = new AutoMiddle(drive, game_data);
 	}
 
 	autoMode->init();
-
 }
 
 void Robot::AutonomousPeriodic() {

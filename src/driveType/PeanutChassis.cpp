@@ -51,6 +51,10 @@ PeanutChassis::~PeanutChassis()
 	delete timer;
 }
 
+void PeanutChassis::resetEncoders() {
+
+}
+
 
 void PeanutChassis::autonomousInit() {
 
@@ -231,30 +235,12 @@ void PeanutChassis::driveStraight(double speed)
 	TankDrive(speed * Constants::bias_ratio + Constants::bias_offset, speed * Constants::bias_ratio + Constants::bias_offset);
 }
 
-/**
- * This will return the encoder ticks for the left and right motors. It will
- * return as an integer pointer, but should be used an array. The first index [0]
- * is the left encoder tick count, and the second index [1] is the right
- * encoder tick count;
- *
- * @return
- * An integer pointer that contains both encoder values.
- */
-int* PeanutChassis::getEncoderValues()
-{
-	return new int[leftTalon->GetSelectedSensorPosition(0), rightTalon->GetSelectedSensorPosition(0)];
+int PeanutChassis::getLeftValue() {
+	return leftTalon->GetSelectedSensorPosition(0);
 }
 
-/**
- * Returns a float representing the yaw (or angle) returned by the Gyro on
- * the robot.
- *
- * @return
- * A float from -180 to +180 representing the degree that the robot is facing.
- */
-float PeanutChassis::getGyroYaw()
-{
-	return gyro->GetYaw();
+int PeanutChassis::getRightValue() {
+	return rightTalon->GetSelectedSensorPosition(0);
 }
 
 /*
@@ -263,3 +249,5 @@ float PeanutChassis::getGyroYaw()
  * double PeanutChassis::getJoystickValue(int axisNum);
  */
 
+void PeanutChassis::setLeftRight(double v, double v2) {
+}

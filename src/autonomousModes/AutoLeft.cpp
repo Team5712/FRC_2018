@@ -8,8 +8,9 @@
 #include <autonomousModes/AutoLeft.h>
 //#include "ctre/Phoenix.h"
 
-AutoLeft::AutoLeft(BaseDrive *srcDrives) {
-	
+AutoLeft::AutoLeft(CompChassis *srcDrive, std::string g) {
+
+	start_position = g;
 	// Drive from AutoBase.hpp
 	drive = srcDrive;
 
@@ -21,41 +22,46 @@ AutoLeft::~AutoLeft() {
 
 void AutoLeft::init() {
 
-
+	drive->shifter->Set(true);
 
 	char msg[80];
-	sprintf(msg, "[AutoLeft Mode]: Game specific message: \"%s\"", start_position.c_str());
+	sprintf(msg, "[AutoLeft Mode]: Game specific message: \"%s\"",
+			start_position.c_str());
 	DriverStation::ReportError(msg);
+	drive->resetEncoders();
+	drive->gyro->ZeroYaw();
 
 }
 
 void AutoLeft::run() {
-	double l_value = drive->getEncoderValues()[0];
-	double r_value = drive->getEncoderValues()[1];
 
+	// test these then we can use um
+//	if (start_position.at(1) == 'L') { //L
+//		leftToLeftScale();
+//	}
+//	if (start_position.at(1) == 'R') {
+//		leftToRightScale();
+//	}
+	//switch right
+//	if (start_position.at(0) == 'L') {
+//		leftToRightSwitch();
+//
+//	} else if (start_position.at(0) == 'R') { //switch left
+//		leftToLeftSwitch();
+//	}
+	//drive->current_led = 0.31;
 
-	// opposite sides, so don't attempt to place cubes
-	if(start_position.at(0) == 'R' && start_position.at(1) == 'R') {
-		crossLine(l_value, r_value);
+	drive->shifter->Set(true);
 
-	} // scale
-	 else if(start_position.at(1) == 'L') {
+	if(start_position.at(0) == 'L') {
+		leftToLeftSwitch();
 
-		 driveForward(l_value, r_value, Constants::D_START_TO_SCALE - 30);
-		 turn(40, 0.5);
-		 // shoot out cube
-
-		// switch
-	} else if(start_position.at(0) == 'L') {
-
-		driveForward(l_value, r_value, Constants::D_START_TO_SWITCH + ((Constants::D_START_TO_SWITCH_END - Constants::D_START_TO_SWITCH) / 2));
-		turn(90, 0.5);
-		// shoot out cube
+		// if the switch is not on the left just cross line
+	} else if(driveStraight(100)) {
+		std::cout << "done";
+		stop();
 	}
-
-
 }
-
 
 void AutoLeft::sideSame() {
 

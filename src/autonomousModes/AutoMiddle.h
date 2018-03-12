@@ -8,7 +8,7 @@ class AutoMiddle : public AutoBase {
 
 
 public:
-	AutoMiddle(BaseDrive *drive);
+	AutoMiddle(CompChassis *drive, std::string);
 	virtual ~AutoMiddle();
 
 	// ---- AUTONOMOUS FUNCTIONS ----
@@ -28,6 +28,11 @@ public:
 	 * left side scale
 	 */
 	void rightLeft() override;
+
+
+	double lift_potScale = 20;
+	double lift_potSwitch = 240;
+	double lift_potFloor = 400;
 };
 
 #endif /* SRC_AUTONOMOUSMODES_AUTOMIDDLE_H_ */

@@ -10,7 +10,7 @@
 
 
 enum class StartingPosition {
-	LEFT, MIDDLE, RIGHT
+	LEFT, MIDDLE, RIGHT, DEFAULT
 };
 
 

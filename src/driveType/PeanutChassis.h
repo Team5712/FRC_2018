@@ -21,6 +21,8 @@ public:
 	void TankDrive(double leftSpeed, double rightSpeed, bool squaredInputs = true) override;
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
 
+	void setLeftRight(double, double) override;
+
 //	// DEPRECATED:
 //	// ---- ROBOT.CPP METHODS ----
 //	void autonomousInit() override;
@@ -31,13 +33,14 @@ public:
 
 	// Overwritten from BaseDrive.h
 	void driveStraight(double speed) override;
-	int* getEncoderValues() override; // Pointer will be used as an array
-	float getGyroYaw() override;
+	int getLeftValue() override;
+	int getRightValue() override;
 
 	void autonomousInit() override;
 	void autonomousPeriodic() override;
 	void teleopInit() override;
 	void teleopPeriodic() override;
+	void resetEncoders() override;
 
 
 private:
@@ -58,9 +61,9 @@ private:
 	bool lift_isSwitch = false;
 	bool lift_isScale = false;
 
-	double lift_potScale = 0.999845;
-	double lift_potSwitch = 1.00143;
-	double lift_potFloor = 1.00163;
+	double lift_potScale = 35;
+	double lift_potSwitch = 250;
+	double lift_potFloor = 415;
 
 	double current_led =  0.99;
 

@@ -20,6 +20,8 @@
 class BaseDrive
 {
 public:
+	virtual void setLeftRight(double, double) = 0;
+
 	virtual ~BaseDrive()
 	{
 		delete drive;
@@ -40,8 +42,9 @@ public:
 //	// ---- END ROBOT.CPP METHODS ----
 
 	virtual void driveStraight(double speed) = 0;
-	virtual int* getEncoderValues() = 0; // Pointer will be used as an array
-	virtual float getGyroYaw() = 0;
+	virtual int getLeftValue() = 0;
+	virtual int getRightValue() = 0;
+	virtual void resetEncoders() = 0;
 
 	virtual void autonomousInit() = 0;
 	virtual void autonomousPeriodic() = 0;
@@ -51,6 +54,11 @@ public:
 
 	AHRS *gyro;
 	AnalogPotentiometer *pot;
+
+	int autoState = 0;
+
+	double leftRatio = 1.2;
+	double rightRatio = 0.0;
 
 protected:
 //	// These ARRAYS will store the port mappings for the motor(s)
@@ -62,6 +70,9 @@ protected:
 	Joystick *joystick_l;
 	Joystick *joystick_r;
 	Joystick *joystick_lift;
+
+	std::string startingPosition;
+
 
 	// peanut chassis
 	// radius - 3 in

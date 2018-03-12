@@ -4,6 +4,7 @@
 // Order imports based on most local -> global
 
 #include <autonomousModes/AutoBase.hpp>
+#include "driveType/CompChassis.h"
 #include "driveType/BaseDrive.hpp"
 #include "driveType/PeanutChassis.h"
 #include "driveType/CompChassis.h"
@@ -14,6 +15,7 @@
 #include "SDInterface.h"
 #include "WPILib.h"
 #include <iostream>
+#include "Priority.h"
 //#include <iostream>
 //#include <string>
 //#include <iostream>
@@ -34,6 +36,7 @@ public:
 	~Robot();
 
 	StartingPosition current_position = StartingPosition::LEFT;
+	Priority priority = Priority::SCALE;
 
 	// Basic methods
 	void RobotInit();
@@ -51,7 +54,7 @@ public:
 private:
 	AutoBase *autoMode;
 	SDInterface sdinterface;
-	BaseDrive *drive;
+	CompChassis *drive;
 
 };
 

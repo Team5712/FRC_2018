@@ -8,38 +8,41 @@
 #ifndef SRC_AUTONOMOUSMODES_AUTOBASE_HPP_
 #define SRC_AUTONOMOUSMODES_AUTOBASE_HPP_
 
-#include "../driveType/BaseDrive.hpp"
+#include "../driveType/CompChassis.h"
 #include "../Constants.h"
 #include <iostream>
 #include "ctre/Phoenix.h"
 #include "WPILib.h"
 
-class AutoBase
-{
+class AutoBase {
 public:
-	virtual ~AutoBase()
-	{
 
-	};
+	virtual ~AutoBase() {
+
+	}
+
+	double forward_power = 0.60;
+	double turn_power = 0.5;
 
 	/**
 	 * drive at the specified motor output for a set amount of time and/or encoder value
 	 */
-	void timedDrive(double time, double left, double right, int e_left, int e_right)
-	{
+	void timedDrive(double time, double left, double right, int e_left,
+			int e_right) {
 
 		Timer *timer = new Timer();
 		int currentL, currentR = 0;
 
 		// Take a "snapshot" of the encoder values instead of resetting them
-		currentL = drive->getEncoderValues()[0];
-		currentR = drive->getEncoderValues()[1];
+		currentL = drive->getLeftValue();
+		currentR = drive->getRightValue();
 
 		timer->Reset();
 		timer->Start();
 
-		while((abs(drive->getEncoderValues()[0] - currentL) < e_left) || (abs(drive->getEncoderValues()[1] - currentR) < e_right) || (timer->Get() < time))
-		{
+		while ((abs(drive->getLeftValue() - currentL) < e_left)
+				|| (abs(drive->getRightValue() - currentR) < e_right)
+				|| (timer->Get() < time)) {
 			drive->TankDrive(left, right);
 		}
 		// Stop the motors since the target / time was reached
@@ -47,16 +50,14 @@ public:
 		stop();
 	}
 
-	void timedDrive(double time, double left, double right)
-	{
+	void timedDrive(double time, double left, double right) {
 
 		Timer *timer = new Timer();
 
 		timer->Reset();
 		timer->Start();
 
-		while(timer->Get() < time)
-		{
+		while (timer->Get() < time) {
 			drive->TankDrive(left, right);
 		}
 		// When the loop ends, stop the motors
@@ -64,47 +65,43 @@ public:
 
 	}
 
-	void timedDrive(double left, double right, int e_left, int e_right)
-	{
+	void timedDrive(double left, double right, int e_left, int e_right) {
 
 		int currentL, currentR = 0;
 
 		// Take a "snapshot" of the encoder values instead of resetting them
-		currentL = drive->getEncoderValues()[0];
-		currentR = drive->getEncoderValues()[1];
+		currentL = drive->getLeftValue();
+		currentR = drive->getRightValue();
 
-		while((drive->getEncoderValues()[0] - abs(currentL) < e_left) && (drive->getEncoderValues()[1] - abs(currentR) < e_right))
-		{
-			drive->TankDrive(left * Constants::bias_ratio + Constants::bias_offset, right * Constants::bias_ratio + Constants::bias_offset);
+		while ((drive->getLeftValue() - abs(currentL) < e_left)
+				&& (drive->getRightValue() - abs(currentR) < e_right)) {
+			drive->TankDrive(
+					left * Constants::bias_ratio + Constants::bias_offset,
+					right * Constants::bias_ratio + Constants::bias_offset);
 		}
 		stop(); // Reached the target, so stop the motors
 
 	}
 
 	// stop the robot and rotate it at a given angle
-	void turn(double degrees, double power)
-	{
-		std::cout << "periodic" << std::endl;
+	bool turn(double degrees, double power, double range = 5) {
+		//std::cout << "periodic" << std::endl;
 
-		stop();
-		drive->gyro->ZeroYaw();
+		double yaw = drive->gyro->GetYaw();
 
-		// turning right
-		if(degrees > 0) {
-			// give left motor power
-			while(drive->getGyroYaw() < degrees) {
-				std::cout << "[AutoBase.hpp][turn()] Gyro Yaw:" << drive->getGyroYaw() << std::endl;
-				drive->TankDrive(abs(power), 0.0);
-			}
-
-		} else  {
-
-			while(drive->getGyroYaw() > degrees) {
-				drive->TankDrive(0.0, abs(power));
-			}
+		// turn left
+		if (yaw > degrees + range) {
+			drive->TankDrive(power, -power);
+			return false;
+		} else if (yaw < degrees - range) {
+//			std::cout << "[AutoBase.hpp][turn()] 1st Gyro Yaw:" << yaw << std::endl;
+			drive->TankDrive(-power, power);
+			return false;
+		} else {
+			std::cout << "[AutoBase.hpp][turn()] Finished!" << std::endl;
+			stop();
+			return true;
 		}
-
-		stop();
 	}
 
 	/**
@@ -137,50 +134,46 @@ public:
 	 * 0: condition not satisfied
 	 * 1: is at destination
 	 */
-	int driveForward(double l_value, double r_value, double inches, double left = 0.5, double right = 0.5) {
-		stop();
-		l_value = drive->getEncoderValues()[0] - l_value;
-		r_value = drive->getEncoderValues()[1] - r_value;
+	bool driveStraight(double inches, double power = 0.50) {
 
-		if(l_value < inches * Constants::CRATIO && r_value < inches * Constants::CRATIO) {
-			drive->TankDrive(left , right);
-			std::cout << "drive " << l_value << " " << r_value << std::endl;
-			return 0;
-		} else {
-			std::cout << "finished" << std::endl;
-			return 1;
+//		std::cout << "drive " << drive->getLeftValue() << " and "
+//				<< drive->getRightValue() << std::endl;
+
+		if (inches > 0) {
+			if (abs(drive->getLeftValue()) < Constants::RATIO * inches
+					|| abs(drive->getRightValue())
+							< Constants::RATIO * inches) {
+				drive->setLeftRight(power, power);
+				return false;
+			} else {
+				std::cout << "stop" << std::endl;
+				stop();
+				return true;
+			}
 		}
-		/*finished
-finished
-finished
-drive 0 40000
-finished
-finished
-finished
-finished
-finished
-drive 0 1.04292e+06
-drive 0 49280
-drive 1.2307e+09 928
-finished
-finished
-finished
-drive 0 83664
-drive 0 56704
-finished
-drive 0 1.01584e+06
-finished
-drive 0 43416
-drive 0 59704
-finished
-finished
-finished
-finished
-		 * */
+		if (inches < 0) {
+			if (drive->getLeftValue() < Constants::RATIO * inches
+					|| drive->getRightValue() < Constants::RATIO * inches) {
+				drive->setLeftRight(-power, -power);
+			} else {
+				std::cout << "stop" << std::endl;
+				stop();
+				return true;
+			}
+		}
 
-
-		stop();
+		return false;
 	}
+
+//	bool runLiftUp(double tickGoal) {
+//		if (lift_master->GetSelectedSensorPosition(0) < tickGoal) {
+//			lift_master->Set(0.0);
+//			return true;
+//		} else {
+//			lift_master->Set(0.75);
+//			return false;
+//		}
+//	}
 
 	/**
 	 * Method that will drive the robot past the first line during autonomous,
@@ -188,8 +181,8 @@ finished
 	 * since the robot is starting in the center and runs the risk
 	 * of crashing into the Switch if this method is executed.
 	 */
-	int crossLine(double l_value, double r_value) {
-		return this->driveForward(l_value, r_value, Constants::D_LINE + Constants::CLENGTH, 0.5, 0.5);
+	bool crossLine() {
+		return driveStraight(Constants::D_LINE + Constants::CLENGTH, 0.5);
 	}
 
 	void stop() {
@@ -214,14 +207,409 @@ finished
 	 */
 	virtual void rightLeft() = 0;
 
-
-protected:
-	BaseDrive *drive;
 	std::string start_position;
+	CompChassis *drive;
+	int autoState = 0;
+protected:
 	// ^ The game specific String containing switch and scale positions
 
+	void middleToRightSwitch() {
+
+		drive->setGrippers(0.55);
+
+		switch (autoState) {
+		case 0:
+			if (driveStraight(24) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (turn(45, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 1 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 2:
+			if (driveStraight(54) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				drive->resetEncoders();
+				std::cout << "State 2 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (turn(-30, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 3 finished at yaw = "
+						<< drive->gyro->GetYaw() << std::endl;
+				autoState++;
+			}
+			break;
+		case 4:
+			if (drive->liftSwitch() == true) {
+				autoState++;
+				std::cout << "State 4 finished" << std::endl;
+			}
+			break;
+		case 5:
+			if (driveStraight(12) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				std::cout << "State 5 finished" << std::endl;
+			}
+			break;
+		case 6:
+			if (drive->shootCube() == true) {
+				autoState++;
+				std::cout << "State 6 complete" << std::endl;
+			}
+			break;
+		case 7:
+			if (driveStraight(-12)) {
+				autoState++;
+				std::cout << "State 7 complete" << std::endl;
+			}
+			break;
+		}
+	}
+	void middleToLeftSwitch() {
+
+		drive->setGrippers(0.55);
+
+		switch (autoState) {
+		case 0:
+			if (driveStraight(24) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (turn(-45, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 1 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 2:
+			if (driveStraight(98) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				drive->resetEncoders();
+				std::cout << "State 2 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (turn(30, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 3 finished at yaw = "
+						<< drive->gyro->GetYaw() << std::endl;
+				autoState++;
+			}
+			break;
+		case 4:
+			if (drive->liftSwitch() == true) {
+				autoState++;
+				std::cout << "State 4 finished" << std::endl;
+			}
+			break;
+		case 5:
+			if (driveStraight(12) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				std::cout << "State 5 finished" << std::endl;
+			}
+			break;
+		case 6:
+			if (drive->shootCube() == true) {
+				autoState++;
+				std::cout << "State 6 complete" << std::endl;
+			}
+			break;
+		case 7:
+			if (driveStraight(-12)) {
+				autoState++;
+				std::cout << "State 7 complete" << std::endl;
+			}
+			break;
+		}
+	}
+
+	void leftToLeftSwitch() {
+
+		switch (autoState) {
+		case 0:
+			if (driveStraight(168) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (turn(90, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 1 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 2:
+			if (drive->liftSwitch() == true) {
+				autoState++;
+				std::cout << "State 4 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (driveStraight(24) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				std::cout << "State 5 finished" << std::endl;
+			}
+			break;
+		case 4:
+			if (drive->shootCube() == true) {
+				autoState++;
+				std::cout << "State 6 complete" << std::endl;
+			}
+			break;
+		case 5:
+			if (driveStraight(-12)) {
+				autoState++;
+				std::cout << "State 5 complete" << std::endl;
+			}
+		}
+
+	}
+	// goes around back
+	void leftToRightSwitch() {
+
+		drive->setGrippers(0.60);
+
+		switch (autoState) {
+		case 0:
+			if (driveStraight(220) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (turn(90, 0.45) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 1 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 2:
+			if (driveStraight(144) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				drive->resetEncoders();
+				std::cout << "State 2 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (turn(60, 0.45) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 3 finished at yaw = "
+						<< drive->gyro->GetYaw() << std::endl;
+				autoState++;
+			}
+			break;
+		case 4:
+			if (drive->liftSwitch() == true) {
+				autoState++;
+				std::cout << "State 4 finished" << std::endl;
+			}
+			break;
+		case 5:
+			if (driveStraight(6) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				std::cout << "State 5 finished" << std::endl;
+			}
+			break;
+		case 6:
+//			if (drive->shootCube() == true) {
+//				autoState++;
+//				std::cout << "State 6 complete" << std::endl;
+//			}
+			break;
+		case 7:
+			if (driveStraight(-5)) {
+				autoState++;
+			}
+		}
+	}
+	void leftToLeftScale() {
+
+		switch (autoState) {
+		case 0:
+			if (driveStraight(348) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (turn(90, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 1 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 2:
+			if (drive->liftScale() == true) {
+				autoState++;
+				std::cout << "State 4 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (driveStraight(18) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				std::cout << "State 5 finished" << std::endl;
+			}
+			break;
+		case 4:
+			if (drive->shootCube() == true) {
+				autoState++;
+				std::cout << "State 6 complete" << std::endl;
+			}
+			break;
+		}
+	}
+	void leftToRightScale() {
+
+		drive->setGrippers(0.55);
+
+		switch (autoState) {
+		case 0:
+			if (driveStraight(230) == true) {
+				drive->gyro->ZeroYaw();
+				std::cout << "State 0 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 1:
+			if (turn(90, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 1 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 2:
+			if (driveStraight(208) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 2 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 3:
+			if (turn(-90, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 3 finished at yaw = "
+						<< drive->gyro->GetYaw() << std::endl;
+				autoState++;
+			}
+			break;
+		case 4:
+			if (drive->liftScale() == true) {
+				autoState++;
+				std::cout << "State 4 finished" << std::endl;
+			}
+			break;
+		case 5:
+			if (driveStraight(48) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				std::cout << "State 5 finished" << std::endl;
+			}
+			break;
+		case 6:
+			if (drive->shootCube() == true) {
+				autoState++;
+				std::cout << "State 6 complete" << std::endl;
+			}
+			break;
+		}
+	}
+
+	void rightToLeftSwitch() {
+		crossLine();
+	}
+	// goes around back
+	void rightToRightSwitch() {
+
+		drive->setGrippers(0.50);
+
+		switch (autoState) {
+		case 0:
+			if (driveStraight(168) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (turn(-90, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 1 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 2:
+			if (drive->liftSwitch() == true) {
+				autoState++;
+				std::cout << "State 4 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (driveStraight(24) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				std::cout << "State 5 finished" << std::endl;
+			}
+			break;
+		case 4:
+			if (drive->shootCube() == true) {
+				autoState++;
+				std::cout << "State 6 complete" << std::endl;
+			}
+			break;
+		case 5:
+			if (driveStraight(-12)) {
+				autoState++;
+				std::cout << "State 5 complete" << std::endl;
+			}
+		}
+	}
+	void rightToLeftScale() {
+		crossLine();
+	}
+	void rightToRightScale() {
+		crossLine();
+	}
+
 };
-
-
 
 #endif /* SRC_AUTONOMOUSMODES_AUTOBASE_HPP_ */

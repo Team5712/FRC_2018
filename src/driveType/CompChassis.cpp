@@ -21,42 +21,60 @@ CompChassis::CompChassis() {
 	r_slave2 = new WPI_VictorSPX(7);
 	r_slave3 = new WPI_VictorSPX(8);
 
-	l_intake = new WPI_VictorSPX(9);
-	r_intake = new WPI_VictorSPX(10);
-
 	lift_master = new WPI_TalonSRX(11);
+
+	l_grip = new WPI_VictorSPX(12);
+	r_grip = new WPI_VictorSPX(13);
 
 	drive = new DifferentialDrive(*l_master, *r_master);
 
 	pot = new AnalogPotentiometer(0, 1, 0);
 
-	gyro = new AHRS(SPI::Port::kMXP, AHRS::kRawData, 200 /*samples/sec*/);
+	compressor = new Compressor(0);
 
-	joystick_l = new Joystick(0);
-	joystick_r = new Joystick(1);
+	shifter = new Solenoid(2);
+	climber = new DoubleSolenoid(3, 4); //temp portss
+
+	cylinder = new DoubleSolenoid(0, 7);
+
+	gyro = new AHRS(SPI::Port::kMXP, AHRS::kRawData, 200 /*samples/sec*/);
+	gyro->Reset();
+	gyro->ZeroYaw();
+
+	l_joystick = new Joystick(0);
+	r_joystick = new Joystick(1);
 	joystick_lift = new Joystick(2);
 
 	// Define the slaves and configure the master to use a QuadEncoder
 	// TOOD: Make sure GetBaseID() returns the Id's for the correct master
-	l_master->SetInverted(true);
-	l_slave1->Set(ControlMode::Follower, l_master->GetBaseID());
-	l_slave2->Set(ControlMode::Follower, l_master->GetBaseID());
-	l_slave3->Set(ControlMode::Follower, l_master->GetBaseID());
+	l_slave1->Follow(*l_master);
+	l_slave2->Follow(*l_master);
+	l_slave3->Follow(*l_master);
+
 	l_master->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
 
-
-	r_slave1->Set(ControlMode::Follower, r_master->GetBaseID());
-	r_slave2->Set(ControlMode::Follower, r_master->GetBaseID());
-	r_slave3->Set(ControlMode::Follower, r_master->GetBaseID());
+	r_slave1->Follow(*r_master);
+	r_slave2->Follow(*r_master);
+	r_slave3->Follow(*r_master);
 	r_master->ConfigSelectedFeedbackSensor(FeedbackDevice::QuadEncoder, 0, 10);
+	lift_master->ConfigSelectedFeedbackSensor(FeedbackDevice::Analog, 0, 10);
+	led = new Spark(9);
 
-	for(int i = 0; i < 100 ; i++) {
+	for (int i = 0; i < 100; i++) {
 		led_values[i] = 0.99 - (i * 0.02);
 	}
+	lift_master->SetNeutralMode(NeutralMode::Brake);
 
-//	l_intake->Set();
-//	r_intake->Set();
+	limitSwitch = new DigitalInput(9);
 
+	// disengage
+	climber->Set(DoubleSolenoid::Value::kReverse);
+
+	current_led = 0.31;
+
+	table = NetworkTable::GetTable("limelight");
+	camera = CameraServer::GetInstance()->StartAutomaticCapture(0);
+	camera.SetResolution(320, 240);
 }
 
 /**
@@ -69,8 +87,8 @@ CompChassis::~CompChassis() {
 	delete l_master;
 	delete r_master;
 
-	delete joystick_l;
-	delete joystick_r;
+	delete l_joystick;
+	delete r_joystick;
 	delete joystick_lift;
 	delete lift_master;
 	delete pot;
@@ -82,9 +100,6 @@ CompChassis::~CompChassis() {
 	delete r_slave1;
 	delete r_slave2;
 	delete r_slave3;
-
-	delete r_intake;
-	delete l_intake;
 }
 
 // ---- ROBOT.CPP METHODS ----
@@ -95,8 +110,12 @@ CompChassis::~CompChassis() {
 // * in the gyro. Overrides from BaseDrive.hpp
 // */
 void CompChassis::autonomousInit() {
+
+	match_timer.Start();
+
 	l_master->SetSelectedSensorPosition(0, 0, 10);
 	r_master->SetSelectedSensorPosition(0, 0, 10);
+	gyro->ZeroYaw();
 
 }
 
@@ -110,7 +129,6 @@ void CompChassis::autonomousPeriodic() {
 	sprintf(str, "L encoder = %d", l_master->GetSelectedSensorPosition(0));
 	DriverStation::ReportError(str);
 
-	r_master->Set(0.7);
 }
 
 /**
@@ -119,15 +137,67 @@ void CompChassis::autonomousPeriodic() {
  * from BaseDrive.hpp
  */
 void CompChassis::teleopInit() {
+	// set encoders to 0
 	l_master->SetSelectedSensorPosition(0, 0, 10);
 	r_master->SetSelectedSensorPosition(0, 0, 10);
 
+	// disengage
+	climber->Set(DoubleSolenoid::Value::kReverse);
+
 	char str[80];
-	sprintf(str, "starting comp chassis");
+	sprintf(str, "teleop init...");
 	DriverStation::ReportError(str);
+	gyro->ZeroYaw();
+}
+
+
+//2350
+/** TODO:
+ * Called in a loop from Robot.cpp. It should include general operations for
+ * driving the robot, such as joystick input, motor output, and reading
+ * various sensor values. Overrides from BaseDrive.hpp
+ */
+void CompChassis::teleopPeriodic() {
+	compressor->Start();
+	handleInput();
+	updateVisionButtons();
+	updateLift();
+	updateBlinkin();
+	updateShifter();
+	updatePneumatics();
+	updateClimber();
+	updateIntake();
+
+	// if were not climbing drive normally
+	if (!isClimbing) {
+
+//		if(getCurrentLeft() > 200) || getCurrentRight() > 200 {
+//
+//		}
+
+		TankDrive((l_joystick->GetRawAxis(1) * r_ratio) + left_command,
+				r_joystick->GetRawAxis(1) + right_command, true);
+	// we can only drive forward with pto activated
+	} else {
+		TankDrive(abs(l_joystick->GetRawAxis(1) * r_ratio) + left_command,
+				abs(r_joystick->GetRawAxis(1)) + right_command, true);
+	}
+	//drive->TankDrive(0, 0, true);
 }
 
 void CompChassis::handleInput() {
+
+	//press once to shift forward
+	if (l_joystick->GetRawButtonPressed(4) && forward == true) {
+		climber->Set(DoubleSolenoid::Value::kForward);
+
+		forward = false;
+	}
+	//press again to shift back
+	if (r_joystick->GetRawButtonPressed(4) && forward == false) {
+		climber->Set(DoubleSolenoid::Value::kReverse);
+		forward = true;
+	}
 
 	// raise to top/scale
 	if (joystick_lift->GetRawButtonPressed(4)) {
@@ -147,87 +217,104 @@ void CompChassis::handleInput() {
 		lift_isScale = false;
 		lift_isFloor = !lift_isFloor;
 	}
+
 }
 
-/**
- * Called in a loop from Robot.cpp. It should include general operations for
- * driving the robot, such as joystick input, motor output, and reading
- * various sensor values. Overrides from BaseDrive.hpp
- */
-void CompChassis::teleopPeriodic() {
+bool CompChassis::shootCube() {
 
-
-	handleInput();
-
-	// the higher the value, the lower it is
-	if (lift_isFloor) {
-
-		current_led = 0.77;
-
-		// dont need to check if it's greater because the lift is already at the floor
-		if (pot->Get() > lift_potFloor) {
-			//std::cout << "floor " << pot->Get() << std::endl;
-			lift_master->Set(-0.25);
-		} else {
-			//std::cout << "stop" << std::endl;
-			lift_master->Set(0.0);
-		}
-
-	} else if (lift_isSwitch) {
-
-		current_led = 0.61;
-
-		// if were within a certain range
-		if (pot->Get() < lift_potSwitch) {
-			//std::cout << "stop" << std::endl;
-			lift_master->Set(0.0);
-			lift_isSwitch = false;
-		} else {
-			//std::cout << "switch " << pot->Get() << std::endl;
-			lift_master->Set(0.70);
-		}
-
-	} else if (lift_isScale)
-	{
-
-		current_led = 0.69;
-
-		if (pot->Get() < lift_potScale) {
-			//std::cout << "stop" << std::endl;
-			lift_master->Set(0.0);
-			lift_isScale = false;
-		} else {
-			//std::cout << "scale " << pot->Get() << std::endl;
-			lift_master->Set(0.50);
-		}
+	if (!isShoot_timer_start) {
+		shoot_timer.Start();
+		isShoot_timer_start = true;
 	}
 
-	//std::cout << pot->Get() << std::endl;
-
-	if (joystick_lift->GetRawButtonPressed(5)) {
-		led_current -= 1;
-		//std::cout << led_values[led_current] << std::endl;
+	if (shoot_timer.Get() < shoot_cube_duration) {
+		l_grip->Set(-0.4);
+		r_grip->Set(-0.4);
+	} else {
+		l_grip->Set(0.0);
+		r_grip->Set(0.0);
+		isShoot_timer_start = false;
+		shoot_timer.Reset();
+		return true;
 	}
-	// left bumper switch led
-	if (joystick_lift->GetRawButtonPressed(6)) {
-		led_current += 1;
-		//std::cout << led_values[led_current] << std::endl;
+
+	return false;
+}
+
+void CompChassis::updateIntake() {
+
+	// alternating intakes left bumper if we dont have a cube in the intake already
+	if (joystick_lift->GetRawButton(5) /*&& !limitSwitch->Get()*/) {
+
+		cylinder->Set(DoubleSolenoid::Value::kReverse);
+
+		if (!isGrip_timerStart) {
+			grip_timer.Start();
+			isGrip_timerStart = true;
+		}
+
+		// left
+		if (grip_timer.Get() < pulse_interval && grip_isLeft) {
+			l_grip->Set(1.0);
+			r_grip->Set(0.20);
+			// this is the right side
+		} else if (grip_timer.Get() < pulse_interval) {
+			l_grip->Set(0.20);
+			r_grip->Set(1.0);
+		} else {
+			// we are done with a cycle on one side of the wheels
+			std::cout << "reset " << std::endl;
+			isGrip_timerStart = false;
+			grip_isLeft = !grip_isLeft;
+			grip_timer.Reset();
+		}
+
+		// right bumper spit out cube
+	} else if (joystick_lift->GetRawButton(6)) {
+
+		l_grip->Set(-0.50);
+		r_grip->Set(-0.50);
+		// if none of the intake buttons are pressed
+	} else if (joystick_lift->GetRawButton(3)) {
+		cylinder->Set(DoubleSolenoid::Value::kReverse);
+	} else {
+		// dega
+		l_grip->Set(0.0);
+		r_grip->Set(0.0);
+		cylinder->Set(DoubleSolenoid::Value::kForward);
 	}
 
-	led->Set(led_values[led_current]);
-	//led->Set(current_led);
+	if(joystick_lift->GetRawButton(8)) {
+		l_grip->Set(0.8);
+		r_grip->Set(0.8);
+	}
+}
 
-	drive->TankDrive(joystick_l->GetRawAxis(1), joystick_r->GetRawAxis(1), true);
-	//drive->TankDrive(0, 0, true);
+void CompChassis::updateShifter() {
+	//hold both triggers on drive joysticks to shift into high gear
+	if (l_joystick->GetRawButton(1) && r_joystick->GetRawButton(1)) {
+		shifter->Set(true);
+	} else {
+		shifter->Set(false);
+	}
+}
 
-	// ignore super small accidental bumps on the right joy stick; down is positive on joystick
-//	if(abs(joystick_lift->GetRawAxis(5)) > 0.025) {
-//		lift_isScale = false;
-//		lift_isSwitch = false;
-//		lift_isFloor = false;
-//		//lift_master->Set(joystick_lift->GetRawAxis(5));
-////		std::cout << joystick_lift->GetRawAxis(5) << std::endl;
-//	}
+void CompChassis::updateClimber() {
+
+	if (joystick_lift->GetRawButtonPressed(9)) {
+		isClimbing = true;
+		shifter->Set(true);
+		climber->Set(DoubleSolenoid::Value::kForward);
+	}
+	// left trigger disables pto shaft
+	if(joystick_lift->GetRawAxis(2) > 0.95) {
+		climber->Set(DoubleSolenoid::Value::kReverse);
+		isClimbing = false;
+	}
+}
+
+void CompChassis::updatePneumatics() {
+
 }
 
 // ---- END ROBOT.CPP METHODS ----
@@ -247,6 +334,98 @@ void CompChassis::ArcadeDrive(double xSpeed, double zRotation,
 		bool squaredInputs) {
 	drive->ArcadeDrive(xSpeed, zRotation, squaredInputs);
 }
+
+void CompChassis::updateBlinkin() {
+
+	if(isClimbing) {
+		current_led = 0.15;
+	}
+
+	if(match_timer.Get() > 30 && match_timer.Get() < 60) {
+		current_led = -0.63;
+	}
+
+
+	led->Set(current_led);
+}
+
+void CompChassis::updateVisionButtons() {
+
+	float tx = table->GetNumber("tx", 0);
+	float kp = -0.01;
+	float min_command = 0.05;
+
+	if (joystick_lift->GetRawButton(7)) {
+		float heading_error = -tx;
+		float steering_adjust = 0.0f;
+
+		if (tx > .5) {
+			steering_adjust = kp * heading_error - min_command;
+		} else if (tx < -.5) {
+			steering_adjust = kp * heading_error + min_command;
+		}
+
+		left_command -= steering_adjust;
+		right_command += steering_adjust;
+
+		std::cout << "tx " << tx << std::endl;
+		std::cout << "left " << left_command << std::endl;
+		std::cout << "right " << right_command << std::endl;
+		//setLeftRight(left_command, right_command);
+	} else if (!joystick_lift->GetRawButton(7)) {
+		left_command = 0;
+		right_command = 0;
+	}
+
+}
+
+void CompChassis::updateLift() {
+
+	// automatic button control
+	if (lift_isFloor) {
+		current_led = 0.77;
+		// dont need to check if it's greater because the lift is already at the floor
+		if (lift_master->GetSelectedSensorPosition(0) > lift_potFloor) {
+			lift_master->Set(0.0);
+			lift_isFloor = false;
+		} else {
+			l_grip->Set(0.70);
+			r_grip->Set(0.70);
+			lift_master->Set(-0.50);
+		}
+	}
+	if (lift_isSwitch) {
+
+		current_led = 0.61;
+		if (lift_master->GetSelectedSensorPosition(0) < lift_potSwitch) {
+			lift_master->Set(0.115);
+			lift_isSwitch = false;
+		} else {
+			l_grip->Set(0.70);
+			r_grip->Set(0.70);
+			lift_master->Set(1.00);
+		}
+	}
+	if (lift_isScale) {
+		current_led = 0.69;
+		if (lift_master->GetSelectedSensorPosition(0) < lift_potScale) {
+			lift_master->Set(0.115);
+			lift_isScale = false;
+		} else {
+			l_grip->Set(0.70);
+			r_grip->Set(0.70);
+			lift_master->Set(1.00);
+		}
+	}
+
+	if(lift_master->GetSelectedSensorPosition(0) < 280) {
+		shifter->Set(true);
+	} else {
+		shifter->Set(false);
+	}
+}
+
+//std::cout << lift_master->GetSelectedSensorPosition(0) << std::endl;
 
 /**
  * The rotation argument controls the curvature of the robot's path rather
@@ -286,7 +465,7 @@ void CompChassis::CurvatureDrive(double xSpeed, double zRotation,
  */
 void CompChassis::TankDrive(double leftSpeed, double rightSpeed,
 		bool squaredInputs) {
-	drive->TankDrive(leftSpeed, rightSpeed, squaredInputs);
+	drive->TankDrive(-leftSpeed, rightSpeed, squaredInputs);
 }
 
 /**
@@ -298,37 +477,98 @@ void CompChassis::TankDrive(double leftSpeed, double rightSpeed,
  * the speed that the robot should drive forward at
  */
 void CompChassis::driveStraight(double speed) {
-	TankDrive(speed * Constants::bias_ratio + Constants::bias_offset,
+	setLeftRight(speed * Constants::bias_ratio + Constants::bias_offset,
 			speed * Constants::bias_ratio + Constants::bias_offset);
 }
 
-/**
- * This will return the encoder ticks for the left and right master motors. It will
- * return as an integer pointer, but should be used an array. The first index [0]
- * is the left encoder tick count, and the second index [1] is the right
- * encoder tick count;
- *
- * @return
- * An integer pointer that contains both encoder values.
- */
-int* CompChassis::getEncoderValues() {
-	return new int[l_master->GetSelectedSensorPosition(0), r_master->GetSelectedSensorPosition(0)];
+int CompChassis::getLeftValue() {
+	return l_master->GetSelectedSensorPosition(0);
 }
 
-/**
- * Returns a float representing the yaw (or angle) returned by the Gyro on
- * the robot.
- *
- * @return
- * A float from -180 to +180 representing the degree that the robot is facing.
- */
-float CompChassis::getGyroYaw() {
-	return gyro->GetYaw();
+int CompChassis::getRightValue() {
+	return r_master->GetSelectedSensorPosition(0);
 }
+
+void CompChassis::setLeftRight(double v, double v2) {
+	l_master->Set(v * 1.01);
+	r_master->Set(v2);
+}
+
+bool CompChassis::liftFloor() {
+
+	current_led = 0.77;
+
+	// dont need to check if it's greater because the lift is already at the floor
+	if (lift_master->GetSelectedSensorPosition(0) > lift_potFloor) {
+		lift_master->Set(0.0);
+		return true;
+	} else {
+		lift_master->Set(-0.45);
+		return false;
+	}
+}
+
+bool CompChassis::liftScale() {
+	current_led = 0.69;
+	if (lift_master->GetSelectedSensorPosition(0) < lift_potScale) {
+		lift_master->Set(0.05);
+		return true;
+	} else {
+		lift_master->Set(0.75);
+		return false;
+	}
+}
+
+bool CompChassis::liftSwitch() {
+	current_led = 0.61;
+	if (lift_master->GetSelectedSensorPosition(0) < lift_potSwitch) {
+		lift_master->Set(0.05);
+		return true;
+	} else {
+		lift_master->Set(0.75);
+		return false;
+	}
+}
+
+//class ExpFilter {
+//public:
+//	double percent;
+//	double value;
+//	ExpFilter(double percent = 0.8) {
+//		this->percent = percent;
+//		value = 0;
+//	}
+//
+//	double filter(double nv) {
+//		value = value * percent + nv * (1 - percent);
+//		return value;
+//	}
+//
+//	double getValue() { return value; }
+//};
+
+double CompChassis::getCurrentLeft() {
+	//static ExpFilter filter;
+
+	//return filter.filter((l_master->GetOutputCurrent() + l_slave1->GetOutputCurrent() + l_slave2->GetOutputCurrent() + l_slave3->GetOutputCurrent()) / 4);
+	return 0.0;
+}
+	//return (r_master->GetOutputCurrent() + r_slave1->GetOutputCurrent() + r_slave2->GetOutputCurrent() + r_slave3->GetOutputCurrent()) / 4;
+
 
 /*
  * These methods will use the default functionality defined in BaseDrive.hpp:
  *
  * double PeanutChassis::getJoystickValue(int axisNum);
  */
+
+void CompChassis::resetEncoders() {
+	r_master->SetSelectedSensorPosition(0, 0, 0);
+	l_master->SetSelectedSensorPosition(0, 0, 0);
+}
+
+void CompChassis::setGrippers(double power) {
+	l_grip->Set(power);
+	r_grip->Set(power);
+}
 

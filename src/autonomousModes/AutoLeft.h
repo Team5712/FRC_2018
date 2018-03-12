@@ -16,7 +16,7 @@
 class AutoLeft : public AutoBase {
 
 public:
-	AutoLeft(BaseDrive *drive);
+	AutoLeft(CompChassis *srcDrive, std::string);
 	virtual ~AutoLeft();
 
 	// ---- AUTONOMOUS FUNCTIONS ----
