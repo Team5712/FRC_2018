@@ -21,45 +21,26 @@ AutoLeft::~AutoLeft() {
 }
 
 void AutoLeft::init() {
-
-	drive->shifter->Set(true);
-
-	char msg[80];
-	sprintf(msg, "[AutoLeft Mode]: Game specific message: \"%s\"",
-			start_position.c_str());
-	DriverStation::ReportError(msg);
 	drive->resetEncoders();
 	drive->gyro->ZeroYaw();
 
+	std::cout << "staring auto" << std::endl;
 }
 
 void AutoLeft::run() {
 
-	// test these then we can use um
-//	if (start_position.at(1) == 'L') { //L
-//		leftToLeftScale();
-//	}
-//	if (start_position.at(1) == 'R') {
-//		leftToRightScale();
-//	}
-	//switch right
-//	if (start_position.at(0) == 'L') {
-//		leftToRightSwitch();
-//
-//	} else if (start_position.at(0) == 'R') { //switch left
-//		leftToLeftSwitch();
-//	}
-	//drive->current_led = 0.31;
 
-	drive->shifter->Set(true);
+	std::cout << "print" << std::endl;
 
 	if(start_position.at(0) == 'L') {
 		leftToLeftSwitch();
 
 		// if the switch is not on the left just cross line
-	} else if(driveStraight(100)) {
-		std::cout << "done";
-		stop();
+	} else if(start_position.at(1) == 'L') {
+		leftToLeftScale();
+
+	} else {
+		leftToLeftScale();
 	}
 }
 

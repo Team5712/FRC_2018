@@ -11,9 +11,10 @@ public:
 	AutoMiddle(CompChassis *drive, std::string);
 	virtual ~AutoMiddle();
 
+	int ratioCounter = 0;
 	// ---- AUTONOMOUS FUNCTIONS ----
-	void init() override;
 	void run() override;
+	void init() override;
 	// ------------------------------
 
 	void sideSame() override;

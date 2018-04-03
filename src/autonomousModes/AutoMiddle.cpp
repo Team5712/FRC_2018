@@ -15,33 +15,44 @@ AutoMiddle::AutoMiddle(CompChassis *srcDrive, std::string start) {
 
 }
 
+void AutoMiddle::init() {
+	drive->resetEncoders();
+	drive->gyro->ZeroYaw();
+
+	std::cout << "staring auto" << std::endl;
+}
+
 AutoMiddle::~AutoMiddle() {
 
 }
 
-void AutoMiddle::init() {
-
-	drive->resetEncoders();
-	drive->gyro->ZeroYaw();
-
-	char msg[80];
-	sprintf(msg, "[AutoMiddle Mode]: Game specific message: \"%s\"",
-			start_position.c_str());
-	DriverStation::ReportError(msg);
-}
-
 void AutoMiddle::run() {
 
-	drive->shifter->Set(true);
-	drive->current_led = 0.43;
+//	if (start_position.at(0) == 'L') {
+//		middleToLeftSwitch();
+//
+//	} else if (start_position.at(0) == 'R') {
+//		middleToRightSwitch();
+//	}
 
-	if (start_position.at(0) == 'L') {
-		middleToLeftSwitch();
-
-	} else if (start_position.at(0) == 'R') {
-		middleToRightSwitch();
+	if(driveStraight(120)) {
+		stop();
+		std::cout << "stop";
 	}
+
+//	std::cout << "left: " << drive->getLeftValue() << std::endl;
+//	std::cout << "right: " << drive->getRightValue() << std::endl;
+//
+//	std::cout << "goal " << 5  * drive->mm.TICKS_PER_FOOT << std::endl;
+//
+//	drive->l_master->Set(ControlMode::MotionMagic, 5  * drive->mm.TICKS_PER_FOOT);
+//	drive->r_master->Set(ControlMode::MotionMagic, 5 * drive->mm.TICKS_PER_FOOT);
+
+
+//	drive->l_master->SetSelectedSensorPosition(5 * Constants::RATIO, 0, drive->mm.TIMEOUT);
+//	drive->r_master->SetSelectedSensorPosition(5 * Constants::RATIO, 0, drive->mm.TIMEOUT);
 }
+
 
 void AutoMiddle::sideSame() {
 
@@ -63,3 +74,4 @@ void AutoMiddle::leftRight() {
 void AutoMiddle::rightLeft() {
 
 }
+

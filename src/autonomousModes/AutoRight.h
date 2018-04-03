@@ -18,8 +18,8 @@ public:
 	virtual ~AutoRight();
 
 	// ---- AUTONOMOUS FUNCTIONS ----
-	void init() override;
 	void run() override;
+	void init() override;
 	// ------------------------------
 
 	void sideSame() override;

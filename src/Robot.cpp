@@ -5,10 +5,15 @@
 
 Robot::Robot() {
 
+	led = new Spark(9);
+
 	autoMode = 0;
 
+	led_idle_values[0] = -0.01;
+	led_idle_values[1] = -0.35;
+	led_idle_values[2] = 0.09;
 
-	drive = new CompChassis();
+	drive = new CompChassis(led);
 	//drive = new PeanutChassis();
 //#if IS_COMPETITION
 //#else
@@ -17,6 +22,8 @@ Robot::Robot() {
 	priority = sdinterface.getPriority();
 	current_position = sdinterface.getStartingPosition();
 }
+
+
 
 Robot::~Robot() {
 
@@ -27,6 +34,7 @@ void Robot::RobotInit() {
 }
 
 void Robot::AutonomousInit() {
+
 	drive->autonomousInit();
 
 	// Stores a string of the switch and scale, i.e. "LRL", "LLR"
@@ -34,13 +42,11 @@ void Robot::AutonomousInit() {
 	// (https://wpilib.screenstepslive.com/s/currentCS/m/getting_started/l/826278-2018-game-data-details)
 
 	std::cout << "auto init..." << std::endl;
-
-
 	// from the driver station
 //	current_position = sdinterface.getStartingPosition();
-	current_position = StartingPosition::MIDDLE;
-	std::string game_data = DriverStation::GetInstance().GetGameSpecificMessage();
-//	std::string game_data = "RRR";
+	current_position = StartingPosition::RIGHT;
+//	std::string game_data = DriverStation::GetInstance().GetGameSpecificMessage();
+	std::string game_data = "RRR";
 
 	// Choose the autonomous mode based upon the game data [string: "LRL"] "Fitting it" - Matthew
 	if (current_position == StartingPosition::LEFT) {
@@ -68,6 +74,37 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 	drive->teleopPeriodic();
+}
+
+
+void Robot::DisabledInit() {
+
+	isLedTimerStart = true;
+	led_timer.Start();
+	std::cout << "disabled init" << std::endl;
+}
+
+void Robot::DisabledPeriodic() {
+
+
+//	// time to swtich lights
+//	if(led_timer.Get() > led_update_interval) {
+//
+//		std::cout << "swap led " << led_current << std::endl;
+//		std::cout << "value " << led_idle_values[led_current] << std::endl;
+//
+//		// increment or roll back to zero
+//		if(led_current < 2) {
+//			led_current++;
+//		} else {
+//			led_current = 0;
+//		}
+//
+//		led->Set(led_idle_values[led_current]);
+//
+//		led_timer.Reset();
+//		led_timer.Start();
+//	}
 }
 
 START_ROBOT_CLASS(Robot)

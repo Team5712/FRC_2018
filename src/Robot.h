@@ -46,8 +46,8 @@ public:
 	void TeleopPeriodic();
 
 	// Unneeded methods
-//	void DisabledInit();
-//	void DisabledPeriodic();
+	void DisabledInit() override;
+	void DisabledPeriodic() override;
 //	void TestInit();
 //	void TestPeriodic();
 
@@ -55,6 +55,15 @@ private:
 	AutoBase *autoMode;
 	SDInterface sdinterface;
 	CompChassis *drive;
+
+	Timer led_timer;
+	double led_update_interval = 3.0;
+	bool isLedTimerStart = false;
+
+	int led_current = 0;
+	float *led_idle_values = new float[3];
+
+	Spark *led;
 
 };
 

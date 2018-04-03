@@ -13,7 +13,7 @@ class CompChassis
 {
 public:
 
-	CompChassis();
+	CompChassis(Spark *l);
 	virtual ~CompChassis();
 
 	// Override DifferentialDrive methods from the base drive class
@@ -27,6 +27,7 @@ public:
 	void teleopInit();
 	void teleopPeriodic();
 	void resetEncoders();
+	void initMotionMagic();
 
 	void updateLift();
 	void updateVisionButtons();
@@ -42,6 +43,28 @@ public:
 	void setLeftRight(double, double);
 	double getCurrentLeft();
 	double getCurrentRight();
+
+
+	struct MotionMagic {
+		const float TIMEOUT = 0.005;
+		const float ACCEL = 3000;
+		const float VEL = 8000;
+		const float TICKS_PER_FOOT = Constants::RATIO * 12;
+		const float MAX_TICKS_PER_SECOND = 8000;
+		const float l_P = 0.0;
+		const float l_I = 0.0;
+		const float l_D = 0.0;
+		const float l_F = 0.70;
+
+		const float r_P = 0.0;
+		const float r_I = 0.0;
+		const float r_D = 0.0;
+		const float r_F = 0.70;
+		const float DISTANCE = 5;
+	} mm;
+
+
+	bool isAtPIDPosition(double distance);
 
 	double current_led = 0;
 	Solenoid *shifter;
@@ -59,8 +82,6 @@ public:
 	float right_command = 0;
 
 	Spark *led;
-	Spark *led2;
-
 	AHRS *gyro;
 
 	double r_ratio = 1.05;
@@ -69,6 +90,33 @@ public:
 	bool liftSwitch();
 	bool liftScale();
 
+	double getLiftJoystick();
+
+	// inputs
+	bool isB = false;
+	bool isY = false;
+	bool isA = false;
+	bool isX = false;
+
+	bool isLeftMiddleButton = false;
+	bool isRightMiddleButton = false;
+
+	bool isRightTrigger = false;
+	bool isLeftTrigger = false;
+
+	bool isRightBumper = false;
+	bool isLeftBumper = false;
+
+	bool isStartButton = false;
+
+	bool isLeftStickButton = false;
+	bool isRightStickButton = false;
+
+	bool isLeftDriveTrigger = false;
+	bool isRightDriveTrigger = false;
+
+	float leftJoystickAxis = 0.0;
+	float rightJoystickAxis = 0.0;
 
 
 	// ---- END DIFFERENTIAL_DRIVE METHODS ----
@@ -88,6 +136,12 @@ public:
 
 	Timer match_timer;
 	bool isClimbing = false;
+
+	Timer intakeTimer;
+	bool isIntakeTimerStart = false;
+	double intakeFinishDuration = 3.0;
+	// this is set to true after we are done taking in cube + intakeFinishDUration
+	bool isDoneIntaking = false;
 
 	bool isLedTimerStart = false;
 	Timer LedTimer;
@@ -145,8 +199,10 @@ private:
 	bool isGrip_timerStart = false;
 	Timer grip_timer;
 
-	double pulse_interval = 0.33;
 	bool grip_isLeft = true;
+	double pulse_interval = 0.3;
+	double offPulsePower = 0.30;
+	double onPulsePower = 1.0;
 
 	bool isUp = false;
 
@@ -154,10 +210,12 @@ private:
 	bool lift_isSwitch = false;
 	bool lift_isScale = false;
 
+	double liftSustainPower = 0.115;
+
 	// 36 is max
 	double lift_potScale = 45;
 	double lift_potSwitch = 320;
-	double lift_potFloor = 390;
+	double lift_potFloor = 400;
 
 	Joystick *l_joystick;
 	Joystick *r_joystick;

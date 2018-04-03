@@ -13,47 +13,39 @@ AutoRight::AutoRight(CompChassis *srcDrive, std::string g) {
 	// Drive from AutoBase.hpp
 	start_position = g;
 	drive = srcDrive;
+
+	drive->resetEncoders();
+	drive->gyro->Reset();
 }
 
 AutoRight::~AutoRight() {
 
 }
 
-void AutoRight::init() {
-
-	char msg[80];
-	sprintf(msg, "[AutoRight Mode]: Game specific message: \"%s\"",
-			start_position.c_str());
-	DriverStation::ReportError(msg);
-
-}
-
 void AutoRight::run() {
 
-//	if(start_position.at(0) == 'L') {
-//		rightToLeftSwitch();
-//	}
-//	if(start_position.at(0) == 'R') {
-//		rightToRightSwitch();
-//	}
-//	if(start_position.at(1) == 'L') {
-//		rightToLeftScale();
-//	}
+
+	drive->led->Set(-0.99);
+
+	if(driveStraight(100, 0.75)) {
+		stop();
+	}
+//	rightToRightScale();
 //	if(start_position.at(1) == 'R') {
+//		rightToRightScale();
+//	} else if(start_position.at(0) == 'R') {
+//		rightToRightSwitch();
+//	} else {
 //		rightToRightScale();
 //	}
 
-	drive->shifter->Set(true);
+}
 
-	if(start_position.at(0) == 'R') {
-		rightToRightSwitch();
+void AutoRight::init() {
+	drive->resetEncoders();
+	drive->gyro->ZeroYaw();
 
-		// if the switch is not on the left just cross line
-	} else if(driveStraight(100)) {
-		std::cout << "done";
-		stop();
-	}
-
+	std::cout << "staring auto" << std::endl;
 }
 
 void AutoRight::sideSame() {
