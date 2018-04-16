@@ -186,13 +186,13 @@ void CompChassis::initMotionMagic() {
 	l_master->SetSelectedSensorPosition(0, 0, mm.TIMEOUT);
 	r_master->SetSelectedSensorPosition(0, 0, mm.TIMEOUT);
 
-
 	l_master->SetSensorPhase(true);
 }
 
-
 bool CompChassis::isAtPIDPosition(double distance) {
-	return (abs(l_master->GetSelectedSensorPosition(0) - (distance * mm.TICKS_PER_FOOT)) < 500);
+	return (abs(
+			l_master->GetSelectedSensorPosition(0)
+					- (distance * mm.TICKS_PER_FOOT)) < 500);
 }
 
 /** TODO:
@@ -210,6 +210,7 @@ void CompChassis::teleopPeriodic() {
 	updatePneumatics();
 	updateClimber();
 	updateIntake();
+	isIntakingAuto = false;
 
 //	std::cout << "left: " << getLeftValue() << std::endl;
 //	std::cout << "right: " << getRightValue() << std::endl;
@@ -337,16 +338,61 @@ void CompChassis::handleInput() {
 
 }
 
-bool CompChassis::shootCube() {
+bool CompChassis::succCube(double power) {
 
+	if (!isSucc_timer_start) {
+		succ_timer.Start();
+		isSucc_timer_start = true;
+	}
+
+	if (succ_timer.Get() < succ_cube_duration) {
+
+		cylinder->Set(DoubleSolenoid::Value::kReverse);
+
+		if (!isGrip_timerStart) {
+			grip_timer.Start();
+			isGrip_timerStart = true;
+		}
+
+		// left
+		if (grip_timer.Get() < pulse_interval && grip_isLeft) {
+			l_grip->Set(onPulsePower);
+			// this is the right side
+		} else if (grip_timer.Get() < pulse_interval) {
+			l_grip->Set(offPulsePower);
+			r_grip->Set(onPulsePower);
+		} else {
+			// we are done with a cycle on one side of the wheels
+			isGrip_timerStart = false;
+			grip_isLeft = !grip_isLeft;
+			grip_timer.Reset();
+		}
+
+		return false;
+	} else {
+		cylinder->Set(DoubleSolenoid::Value::kForward);
+
+		l_grip->Set(0.0);
+		r_grip->Set(0.0);
+		isSucc_timer_start = false;
+		succ_timer.Reset();
+		return true;
+	}
+
+	return false;
+}
+
+bool CompChassis::shootCube(double power) {
+
+	// TODO negative grip power shoots the cube
 	if (!isShoot_timer_start) {
 		shoot_timer.Start();
 		isShoot_timer_start = true;
 	}
 
 	if (shoot_timer.Get() < shoot_cube_duration) {
-		l_grip->Set(-0.4);
-		r_grip->Set(-0.4);
+		l_grip->Set(power);
+		r_grip->Set(power);
 		return false;
 	} else {
 		l_grip->Set(0.0);
@@ -362,7 +408,8 @@ bool CompChassis::shootCube() {
 void CompChassis::updateIntake() {
 
 	// alternating intakes left bumper or the drivers left joystick middle button if we dont have a cube in the intake already
-	if ((isLeftBumper || isLeftMiddleButton || isRightMiddleButton)) {
+	if ((isLeftBumper || isLeftMiddleButton || isRightMiddleButton
+			|| isIntakingAuto)) {
 
 		cylinder->Set(DoubleSolenoid::Value::kReverse);
 
@@ -405,9 +452,13 @@ void CompChassis::updateIntake() {
 		// try to suck the cube back in shortly after losing it
 	} else if (!limitSwitch->Get()) {
 
+	} else if (isIntakeToggled) {
+		l_grip->Set(0.50);
+		r_grip->Set(0.50);
+		cylinder->Set(DoubleSolenoid::Value::kForward);
 	} else {
-		l_grip->Set(0.0);
-		r_grip->Set(0.0);
+		l_grip->Set(0.50);
+		r_grip->Set(0.50);
 		cylinder->Set(DoubleSolenoid::Value::kForward);
 	}
 
@@ -437,10 +488,12 @@ void CompChassis::updateIntake() {
 
 void CompChassis::updateShifter() {
 	//hold both triggers on drive joysticks to shift into high gear
-	if (l_joystick->GetRawButton(1) && r_joystick->GetRawButton(1)) {
-		shifter->Set(true);
-	} else {
+	if (l_joystick->GetRawButton(1) || r_joystick->GetRawButton(1)) {
+		compressor->Stop();
 		shifter->Set(false);
+	} else if (!isClimbing) {
+		compressor->Start();
+		shifter->Set(true);
 	}
 }
 
@@ -459,16 +512,16 @@ void CompChassis::updateClimber() {
 		isClimbing = false;
 	}
 
-
-	// TODO true is high gear
+	// TODO true is low gear
 	if (!isClimbing && !l_joystick->GetRawButton(1)
 			&& !r_joystick->GetRawButton(1)) {
 		shifter->Set(true);
+		compressor->Start();
 	}
 	if (isClimbing) {
+		compressor->Stop();
 		shifter->Set(false);
 	}
-	shifter->Set(false);
 }
 
 void CompChassis::updatePneumatics() {
@@ -477,18 +530,23 @@ void CompChassis::updatePneumatics() {
 
 void CompChassis::updateBlinkin() {
 
-	if (isClimbing) {
-		current_led = 0.15;
-	} else if (!lift_isFloor && !lift_isScale && !lift_isSwitch) {
-		current_led = -0.31;
-	}
-
-	if (match_timer.Get() > 30 && match_timer.Get() < 60) {
+	// crazy mode for scale lift
+	if (lift_master->GetSelectedSensorPosition(0) < lift_potScale + 100) {
 		current_led = -0.99;
-	} else if (!lift_isFloor && !lift_isScale && !lift_isSwitch) {
-		current_led = -0.31;
-	}
+	} else if(lift_master->GetSelectedSensorPosition(0) > lift_potScale && lift_master->GetSelectedSensorPosition(0) < lift_potSwitch) {
+		current_led = 0.05;
+	} else {
+		if (isClimbing) {
+			current_led = 0.15;
+		} else if (!lift_isFloor && !lift_isScale && !lift_isSwitch) {
+			current_led = 0.05;
+		}
 
+		if (!lift_isFloor && !lift_isScale && !lift_isSwitch) {
+			current_led = 0.05;
+		}
+
+	}
 	led->Set(current_led);
 }
 

@@ -1,7 +1,5 @@
 #include "Robot.h"
-// TODO check me
 #define IS_COMPETITION true
-
 
 Robot::Robot() {
 
@@ -23,8 +21,6 @@ Robot::Robot() {
 	current_position = sdinterface.getStartingPosition();
 }
 
-
-
 Robot::~Robot() {
 
 }
@@ -43,10 +39,20 @@ void Robot::AutonomousInit() {
 
 	std::cout << "auto init..." << std::endl;
 	// from the driver station
-//	current_position = sdinterface.getStartingPosition();
-	current_position = StartingPosition::RIGHT;
-//	std::string game_data = DriverStation::GetInstance().GetGameSpecificMessage();
-	std::string game_data = "RRR";
+	StartingPosition pos = sdinterface.getStartingPosition();
+	current_position = StartingPosition::LEFT;
+	std::string game_data = DriverStation::GetInstance().GetGameSpecificMessage();
+//	std::string game_data = "RRR";
+
+	if (pos == StartingPosition::LEFT) {
+		std::cout << "left " << std::endl;
+	}
+	if (pos == StartingPosition::MIDDLE) {
+		std::cout << "middle " << std::endl;
+	}
+	if (pos == StartingPosition::RIGHT) {
+		std::cout << "right " << std::endl;
+	}
 
 	// Choose the autonomous mode based upon the game data [string: "LRL"] "Fitting it" - Matthew
 	if (current_position == StartingPosition::LEFT) {
@@ -76,7 +82,6 @@ void Robot::TeleopPeriodic() {
 	drive->teleopPeriodic();
 }
 
-
 void Robot::DisabledInit() {
 
 	isLedTimerStart = true;
@@ -85,7 +90,6 @@ void Robot::DisabledInit() {
 }
 
 void Robot::DisabledPeriodic() {
-
 
 //	// time to swtich lights
 //	if(led_timer.Get() > led_update_interval) {

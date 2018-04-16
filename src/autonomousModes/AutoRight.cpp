@@ -24,21 +24,13 @@ AutoRight::~AutoRight() {
 
 void AutoRight::run() {
 
+	drive->shifter->Set(false);
 
-	drive->led->Set(-0.99);
-
-	if(driveStraight(100, 0.75)) {
-		stop();
+	if(start_position.at(0) == 'R') {
+		rightToRightSwitch();
+	} else {
+		crossLine();
 	}
-//	rightToRightScale();
-//	if(start_position.at(1) == 'R') {
-//		rightToRightScale();
-//	} else if(start_position.at(0) == 'R') {
-//		rightToRightSwitch();
-//	} else {
-//		rightToRightScale();
-//	}
-
 }
 
 void AutoRight::init() {

@@ -28,29 +28,22 @@ AutoMiddle::~AutoMiddle() {
 
 void AutoMiddle::run() {
 
-//	if (start_position.at(0) == 'L') {
-//		middleToLeftSwitch();
-//
-//	} else if (start_position.at(0) == 'R') {
-//		middleToRightSwitch();
-//	}
 
-	if(driveStraight(120)) {
-		stop();
-		std::cout << "stop";
+	drive->shifter->Set(false);
+
+	// TODO drive forward more on first left turn, turn and turn less
+	if (start_position.at(0) == 'L') {
+		middleToLeftSwitch();
+
+	} else if (start_position.at(0) == 'R') {
+		middleToRightSwitch();
 	}
 
-//	std::cout << "left: " << drive->getLeftValue() << std::endl;
-//	std::cout << "right: " << drive->getRightValue() << std::endl;
+//	std::cout << "left: " << drive->getLeftValue()  / Constants::RATIO << std::endl;
+//	std::cout << "right: " << drive->getRightValue() / Constants::RATIO << std::endl;
 //
 //	std::cout << "goal " << 5  * drive->mm.TICKS_PER_FOOT << std::endl;
 //
-//	drive->l_master->Set(ControlMode::MotionMagic, 5  * drive->mm.TICKS_PER_FOOT);
-//	drive->r_master->Set(ControlMode::MotionMagic, 5 * drive->mm.TICKS_PER_FOOT);
-
-
-//	drive->l_master->SetSelectedSensorPosition(5 * Constants::RATIO, 0, drive->mm.TIMEOUT);
-//	drive->r_master->SetSelectedSensorPosition(5 * Constants::RATIO, 0, drive->mm.TIMEOUT);
 }
 
 

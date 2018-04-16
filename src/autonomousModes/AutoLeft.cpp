@@ -29,19 +29,16 @@ void AutoLeft::init() {
 
 void AutoLeft::run() {
 
+	drive->shifter->Set(false);
 
-	std::cout << "print" << std::endl;
-
-	if(start_position.at(0) == 'L') {
-		leftToLeftSwitch();
-
-		// if the switch is not on the left just cross line
-	} else if(start_position.at(1) == 'L') {
+	if(start_position.at(1) == 'L') {
 		leftToLeftScale();
-
+	} else if(start_position.at(1) == 'R') {
+		leftToRightScale();
 	} else {
-		leftToLeftScale();
+		crossLine();
 	}
+
 }
 
 void AutoLeft::sideSame() {

@@ -152,15 +152,22 @@ public:
 	Timer cylinder_timer_down;
 	double cylinder_down_wait = 1.0;
 
+	bool isIntakingAuto = false;
+	bool isIntakeToggled = false;
 
 	// timer for shooting the cube after a delay
 	bool isShoot_timer_start = false;
 	Timer shoot_timer;
 	double shoot_cube_duration = 1.0;
-	bool shootCube();
+	bool shootCube(double power = -0.35);
+
+	bool isSucc_timer_start = false;
+	Timer succ_timer;
+	double succ_cube_duration = 4.0;
+	bool succCube(double power = 0.35);
 
 
-	//bool succCube();
+
 
 	cs::UsbCamera camera;
 
