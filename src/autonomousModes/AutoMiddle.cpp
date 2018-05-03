@@ -28,8 +28,9 @@ AutoMiddle::~AutoMiddle() {
 
 void AutoMiddle::run() {
 
-
 	drive->shifter->Set(false);
+
+	drive->setLed(-0.99);
 
 	// TODO drive forward more on first left turn, turn and turn less
 	if (start_position.at(0) == 'L') {

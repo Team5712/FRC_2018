@@ -12,6 +12,11 @@
 class CompChassis
 {
 public:
+	void setLed(double value);
+	double current_led = -0.99;
+
+	void raiseIntake();
+	void lowerIntake();
 
 	CompChassis(Spark *l);
 	virtual ~CompChassis();
@@ -64,9 +69,12 @@ public:
 	} mm;
 
 
+	Solenoid *cylinderClamp;
+	Solenoid *cylinderLift;
+
 	bool isAtPIDPosition(double distance);
 
-	double current_led = 0;
+
 	Solenoid *shifter;
 
 
@@ -77,7 +85,7 @@ public:
 	WPI_TalonSRX *r_master;
 	WPI_TalonSRX *lift_master;
 
-	std::shared_ptr<NetworkTable> table;
+//	std::shared_ptr<NetworkTable> table;
 	float left_command = 0;
 	float right_command = 0;
 
@@ -134,14 +142,20 @@ public:
 	int getLeftValue();
 	int getRightValue();
 
+	// after we release the left bumper
+	bool isDoneIntaking = false;
+	Timer intakeDelayTimer;
+	bool isIntakeDelayTimerStart = false;
+	double intakeDelay = 0.20;
+
 	Timer match_timer;
 	bool isClimbing = false;
 
-	Timer intakeTimer;
-	bool isIntakeTimerStart = false;
-	double intakeFinishDuration = 3.0;
-	// this is set to true after we are done taking in cube + intakeFinishDUration
-	bool isDoneIntaking = false;
+//	Timer intakeTimer;
+//	bool isIntakeTimerStart = false;
+//	double intakeFinishDuration = 3.0;
+//	// this is set to true after we are done taking in cube + intakeFinishDUration
+//	bool isDoneIntaking = false;
 
 	bool isLedTimerStart = false;
 	Timer LedTimer;
@@ -152,9 +166,6 @@ public:
 	Timer cylinder_timer_down;
 	double cylinder_down_wait = 1.0;
 
-	bool isIntakingAuto = false;
-	bool isIntakeToggled = false;
-
 	// timer for shooting the cube after a delay
 	bool isShoot_timer_start = false;
 	Timer shoot_timer;
@@ -164,12 +175,9 @@ public:
 	bool isSucc_timer_start = false;
 	Timer succ_timer;
 	double succ_cube_duration = 4.0;
-	bool succCube(double power = 0.35);
+	bool succCube(double power = 0.45);
 
-
-
-
-	cs::UsbCamera camera;
+//	cs::UsbCamera camera;
 
 	DigitalInput *limitSwitch;
 
@@ -193,23 +201,17 @@ private:
 
 	AnalogPotentiometer *pot;
 
-
-
 	Compressor *compressor;
 
-	DoubleSolenoid *cylinder;
-
-
 	DoubleSolenoid *climber;
-	bool hasCube;
 
 	bool isGrip_timerStart = false;
 	Timer grip_timer;
 
 	bool grip_isLeft = true;
 	double pulse_interval = 0.3;
-	double offPulsePower = 0.30;
-	double onPulsePower = 1.0;
+	double offPulsePower = 0.35;
+	double onPulsePower = 0.85;
 
 	bool isUp = false;
 
@@ -217,12 +219,11 @@ private:
 	bool lift_isSwitch = false;
 	bool lift_isScale = false;
 
-	double liftSustainPower = 0.115;
+	double liftSustainPower = 0.15;
 
-	// 36 is max
-	double lift_potScale = 45;
+	double lift_potScale = 25;
 	double lift_potSwitch = 320;
-	double lift_potFloor = 400;
+	double lift_potFloor = 390;
 
 	Joystick *l_joystick;
 	Joystick *r_joystick;

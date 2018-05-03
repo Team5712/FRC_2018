@@ -40,9 +40,9 @@ void Robot::AutonomousInit() {
 	std::cout << "auto init..." << std::endl;
 	// from the driver station
 	StartingPosition pos = sdinterface.getStartingPosition();
-	current_position = StartingPosition::LEFT;
+	current_position = StartingPosition::RIGHT;
 	std::string game_data = DriverStation::GetInstance().GetGameSpecificMessage();
-//	std::string game_data = "RRR";
+//	std::string game_data = "";
 
 	if (pos == StartingPosition::LEFT) {
 		std::cout << "left " << std::endl;
@@ -83,6 +83,10 @@ void Robot::TeleopPeriodic() {
 }
 
 void Robot::DisabledInit() {
+
+//	drive->lift_isFloor = false;
+//	drive->lift_isScale = false;
+//	drive->lift_isSwitch = false;
 
 	isLedTimerStart = true;
 	led_timer.Start();

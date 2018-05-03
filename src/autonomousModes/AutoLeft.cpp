@@ -29,7 +29,18 @@ void AutoLeft::init() {
 
 void AutoLeft::run() {
 
+
 	drive->shifter->Set(false);
+
+//	if(start_position.at(1) == 'L') {
+//		leftToLeftScale();
+//	} else if(start_position.at(1) == 'R') {
+//		leftToRightScale();
+//	} else if(start_position.at(0) == 'L'){
+//		leftToLeftSwitch();
+//	} else {
+//		crossLine();
+//	}
 
 	if(start_position.at(1) == 'L') {
 		leftToLeftScale();
@@ -38,7 +49,6 @@ void AutoLeft::run() {
 	} else {
 		crossLine();
 	}
-
 }
 
 void AutoLeft::sideSame() {

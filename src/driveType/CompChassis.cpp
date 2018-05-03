@@ -34,7 +34,10 @@ CompChassis::CompChassis(Spark *l) {
 
 	shifter = new Solenoid(2);
 	climber = new DoubleSolenoid(3, 4); //temp portss
-	cylinder = new DoubleSolenoid(0, 7);
+	// 3, 4 for comp
+
+	cylinderClamp = new Solenoid(6);
+	cylinderLift = new Solenoid(7);
 
 	gyro = new AHRS(SPI::Port::kMXP, AHRS::kRawData, 200 /*samples/sec*/);
 	gyro->Reset();
@@ -67,7 +70,7 @@ CompChassis::CompChassis(Spark *l) {
 	// disengage
 	climber->Set(DoubleSolenoid::Value::kReverse);
 
-	current_led = 0.31;
+	current_led = -0.99;
 //
 //	l_master->ConfigClosedloopRamp(0.75,0);
 //	l_slave1->ConfigClosedloopRamp(0,0);
@@ -78,9 +81,9 @@ CompChassis::CompChassis(Spark *l) {
 //	r_slave2->ConfigClosedloopRamp(0,0);
 //	r_slave3->ConfigClosedloopRamp(0,0);
 
-	table = NetworkTable::GetTable("limelight");
-	camera = CameraServer::GetInstance()->StartAutomaticCapture(0);
-	camera.SetResolution(320, 240);
+//	table = NetworkTable::GetTable("limelight");
+//	camera = CameraServer::GetInstance()->StartAutomaticCapture(0);
+//	camera.SetResolution(320, 240);
 
 }
 
@@ -210,7 +213,6 @@ void CompChassis::teleopPeriodic() {
 	updatePneumatics();
 	updateClimber();
 	updateIntake();
-	isIntakingAuto = false;
 
 //	std::cout << "left: " << getLeftValue() << std::endl;
 //	std::cout << "right: " << getRightValue() << std::endl;
@@ -226,6 +228,8 @@ void CompChassis::teleopPeriodic() {
 		TankDrive(-abs(l_joystick->GetRawAxis(1)),
 				-abs(r_joystick->GetRawAxis(1)) + right_command, true);
 	}
+
+
 	//drive->TankDrive(0, 0, true);
 }
 
@@ -284,25 +288,6 @@ void CompChassis::handleInput() {
 		isRightBumper = false;
 	}
 
-	// raise to top/scale
-	if (joystick_lift->GetRawButtonPressed(4)) {
-		lift_isSwitch = false;
-		lift_isFloor = false;
-		lift_isScale = !lift_isScale;
-	}
-	// move to switch
-	if (joystick_lift->GetRawButtonPressed(2)) {
-		lift_isScale = false;
-		lift_isFloor = false;
-		lift_isSwitch = !lift_isSwitch;
-	}
-	// lower to floor
-	if (joystick_lift->GetRawButtonPressed(1)) {
-		lift_isSwitch = false;
-		lift_isScale = false;
-		lift_isFloor = !lift_isFloor;
-	}
-
 	leftJoystickAxis = joystick_lift->GetRawAxis(2);
 	rightJoystickAxis = joystick_lift->GetRawAxis(3);
 
@@ -347,7 +332,8 @@ bool CompChassis::succCube(double power) {
 
 	if (succ_timer.Get() < succ_cube_duration) {
 
-		cylinder->Set(DoubleSolenoid::Value::kReverse);
+		cylinderClamp->Set(DoubleSolenoid::Value::kReverse);
+		cylinderLift->Set(true);
 
 		if (!isGrip_timerStart) {
 			grip_timer.Start();
@@ -370,7 +356,8 @@ bool CompChassis::succCube(double power) {
 
 		return false;
 	} else {
-		cylinder->Set(DoubleSolenoid::Value::kForward);
+		cylinderClamp->Set(DoubleSolenoid::Value::kForward);
+		cylinderLift->Set(false);
 
 		l_grip->Set(0.0);
 		r_grip->Set(0.0);
@@ -408,10 +395,10 @@ bool CompChassis::shootCube(double power) {
 void CompChassis::updateIntake() {
 
 	// alternating intakes left bumper or the drivers left joystick middle button if we dont have a cube in the intake already
-	if ((isLeftBumper || isLeftMiddleButton || isRightMiddleButton
-			|| isIntakingAuto)) {
+	if (isLeftBumper || isLeftMiddleButton || isRightMiddleButton) {
 
-		cylinder->Set(DoubleSolenoid::Value::kReverse);
+		cylinderLift->Set(true);
+		cylinderClamp->Set(true);
 
 		if (!isGrip_timerStart) {
 			grip_timer.Start();
@@ -432,6 +419,10 @@ void CompChassis::updateIntake() {
 			grip_timer.Reset();
 		}
 
+		// none of the other statements will execute because its being held down, once it's released it will continue to the else
+		isDoneIntaking = true;
+		intakeDelayTimer.Reset();
+
 		// right bumper spit out cube
 	} else if (isRightBumper) {
 
@@ -446,43 +437,66 @@ void CompChassis::updateIntake() {
 		}
 
 		// if none of the intake buttons are pressed
-	} else if (isX) {
-		cylinder->Set(DoubleSolenoid::Value::kReverse);
-
-		// try to suck the cube back in shortly after losing it
-	} else if (!limitSwitch->Get()) {
-
-	} else if (isIntakeToggled) {
-		l_grip->Set(0.50);
-		r_grip->Set(0.50);
-		cylinder->Set(DoubleSolenoid::Value::kForward);
 	} else {
-		l_grip->Set(0.50);
-		r_grip->Set(0.50);
-		cylinder->Set(DoubleSolenoid::Value::kForward);
+
+		l_grip->Set(0.35);
+		r_grip->Set(0.35);
+
+		// if we're done with the left bumper
+		if (isDoneIntaking) {
+			if (!isIntakeDelayTimerStart) {
+				intakeDelayTimer.Start();
+				isIntakeDelayTimerStart = true;
+			}
+
+			cylinderClamp->Set(false);
+
+			// clamp down on the cube slightly before the pneumatic lift goes up
+			if (intakeDelayTimer.Get() > intakeDelay) {
+				isIntakeDelayTimerStart = false;
+				intakeDelayTimer.Reset();
+				cylinderLift->Set(false);
+				isDoneIntaking = false;
+			}
+
+		} else {
+			cylinderLift->Set(false);
+
+			if(isX || isLeftBumper) {
+				cylinderClamp->Set(true);
+			} else {
+				cylinderClamp->Set(false);
+			}
+		}
 	}
 
-//	if(joystick_lift->GetRawButtonReleased(5)) {
-//		isDoneIntaking = true;
-//	}
-//
-//	if(!isIntakeTimerStart && isDoneIntaking) {
-//		intakeTimer.Start();
-//		isIntakeTimerStart = true;
-//	}
-//
-//	if(intakeTimer.Get() < intakeFinishDuration && isIntakeTimerStart) {
-//		setGrippers(0.55);
-//	} else {
-//		isDoneIntaking = false;
-//		intakeTimer.Stop();
-//		isIntakeTimerStart = false;
-//		setGrippers(0.0);
-//	}
+	// disable intake as we near the scale
+	if (lift_master->GetSelectedSensorPosition(0) < lift_potSwitch - 40
+			&& !isRightBumper) {
+		l_grip->Set(0.0);
+		r_grip->Set(0.0);
+	}
 
-	if (isStartButton) {
-		l_grip->Set(0.8);
-		r_grip->Set(0.8);
+	if (isA) {
+		cylinderLift->Set(true);
+	}
+
+	if (isB) {
+		l_grip->Set(0.65);
+		r_grip->Set(0.65);
+	}
+
+	if (isA) {
+		cylinderLift->Set(true);
+	}
+
+	if (isX) {
+		cylinderClamp->Set(true);
+	}
+
+	if (isY) {
+		l_grip->Set(-1.0);
+		r_grip->Set(-1.0);
 	}
 }
 
@@ -530,27 +544,33 @@ void CompChassis::updatePneumatics() {
 
 void CompChassis::updateBlinkin() {
 
-	// crazy mode for scale lift
-	if (lift_master->GetSelectedSensorPosition(0) < lift_potScale + 100) {
+	// -0.25 red breath
+
+	// if scale position lift
+	if (lift_master->GetSelectedSensorPosition(0) < lift_potScale + 70) {
+		current_led = 0.07;
+
+		// if switch position
+	} else if (lift_master->GetSelectedSensorPosition(0) < lift_potFloor + 20
+			&& lift_master->GetSelectedSensorPosition(0)
+					> lift_potSwitch - 80) {
+		current_led = -0.25;
+	} else if(lift_master->GetSelectedSensorPosition(0) < lift_potScale + 20) {
 		current_led = -0.99;
-	} else if(lift_master->GetSelectedSensorPosition(0) > lift_potScale && lift_master->GetSelectedSensorPosition(0) < lift_potSwitch) {
-		current_led = 0.05;
 	} else {
-		if (isClimbing) {
-			current_led = 0.15;
-		} else if (!lift_isFloor && !lift_isScale && !lift_isSwitch) {
-			current_led = 0.05;
-		}
-
-		if (!lift_isFloor && !lift_isScale && !lift_isSwitch) {
-			current_led = 0.05;
-		}
-
+		current_led = 0.53;
 	}
+
+	if (isClimbing) {
+		current_led = -0.99;
+	}
+
 	led->Set(current_led);
 }
 
 void CompChassis::updateLift() {
+
+//	std::cout << lift_master->GetSelectedSensorPosition(0) << std::endl;
 
 	// automatic button control
 	if (lift_isFloor) {
@@ -608,8 +628,7 @@ void CompChassis::updateLift() {
 		if (getLiftJoystick() < 0) {
 
 			// if we go lower than the floor height, set to zero so we dont smash into robot, stop the lift proportionately to how fast we're going
-			if (lift_master->GetSelectedSensorPosition(0)
-					> lift_potFloor - abs(getLiftJoystick() * 10)) {
+			if (lift_master->GetSelectedSensorPosition(0) > lift_potFloor) {
 				lift_master->Set(0.0);
 			} else {
 				// scale down the power slightly
@@ -635,20 +654,18 @@ void CompChassis::updateLift() {
 
 bool CompChassis::liftFloor() {
 
-	current_led = 0.77;
 
 // dont need to check if it's greater because the lift is already at the floor
 	if (lift_master->GetSelectedSensorPosition(0) > lift_potFloor) {
 		lift_master->Set(0.0);
 		return true;
 	} else {
-		lift_master->Set(-0.45);
+		lift_master->Set(-0.65);
 		return false;
 	}
 }
 
 bool CompChassis::liftScale() {
-	current_led = 0.69;
 	if (lift_master->GetSelectedSensorPosition(0) < lift_potScale) {
 		lift_master->Set(liftSustainPower);
 		return true;
@@ -659,7 +676,6 @@ bool CompChassis::liftScale() {
 }
 
 bool CompChassis::liftSwitch() {
-	current_led = 0.61;
 	if (lift_master->GetSelectedSensorPosition(0) < lift_potSwitch) {
 		lift_master->Set(liftSustainPower);
 		return true;
@@ -718,32 +734,32 @@ void CompChassis::setGrippers(double power) {
 }
 
 void CompChassis::updateVisionButtons() {
-
-	float tx = table->GetNumber("tx", 0);
-	float kp = -0.01;
-	float min_command = 0.05;
-
-	if (joystick_lift->GetRawButton(7)) {
-		float heading_error = -tx;
-		float steering_adjust = 0.0f;
-
-		if (tx > .5) {
-			steering_adjust = kp * heading_error - min_command;
-		} else if (tx < -.5) {
-			steering_adjust = kp * heading_error + min_command;
-		}
-
-		left_command -= steering_adjust;
-		right_command += steering_adjust;
-
-		std::cout << "tx " << tx << std::endl;
-		std::cout << "left " << left_command << std::endl;
-		std::cout << "right " << right_command << std::endl;
-		//setLeftRight(left_command, right_command);
-	} else if (!joystick_lift->GetRawButton(7)) {
-		left_command = 0;
-		right_command = 0;
-	}
+//
+//	float tx = table->GetNumber("tx", 0);
+//	float kp = -0.01;
+//	float min_command = 0.05;
+//
+//	if (joystick_lift->GetRawButton(7)) {
+//		float heading_error = -tx;
+//		float steering_adjust = 0.0f;
+//
+//		if (tx > .5) {
+//			steering_adjust = kp * heading_error - min_command;
+//		} else if (tx < -.5) {
+//			steering_adjust = kp * heading_error + min_command;
+//		}
+//
+//		left_command -= steering_adjust;
+//		right_command += steering_adjust;
+//
+//		std::cout << "tx " << tx << std::endl;
+//		std::cout << "left " << left_command << std::endl;
+//		std::cout << "right " << right_command << std::endl;
+//		//setLeftRight(left_command, right_command);
+//	} else if (!joystick_lift->GetRawButton(7)) {
+//		left_command = 0;
+//		right_command = 0;
+//	}
 
 }
 
@@ -778,6 +794,23 @@ void CompChassis::setLeftRight(double v, double v2) {
 void CompChassis::ArcadeDrive(double xSpeed, double zRotation,
 		bool squaredInputs) {
 	drive->ArcadeDrive(xSpeed, zRotation, squaredInputs);
+}
+
+void CompChassis::raiseIntake() {
+	cylinderClamp->Set(false);
+	cylinderLift->Set(false);
+}
+
+void CompChassis::lowerIntake() {
+	cylinderClamp->Set(true);
+	cylinderLift->Set(true);
+	l_grip->Set(0.5);
+	r_grip->Set(0.5);
+}
+
+void CompChassis::setLed(double value) {
+	current_led = value;
+	led->Set(value);
 }
 
 /**

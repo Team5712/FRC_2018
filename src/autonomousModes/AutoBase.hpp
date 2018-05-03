@@ -13,6 +13,7 @@
 #include <iostream>
 #include "ctre/Phoenix.h"
 #include "WPILib.h"
+#include <unistd.h>
 
 class AutoBase {
 public:
@@ -143,7 +144,7 @@ public:
 		// how much power we're giving the motors during ramp and deacceleration
 		double power = 0;
 		// minumum power that we add to pid_power
-		double min_power = 0.05;
+		double min_power = 0.10;
 	} ramp;
 
 	struct Deacceleration {
@@ -560,7 +561,6 @@ protected:
 		case 9:
 			if (drive->liftFloor()) {
 				autoState++;
-				drive->isIntakingAuto = true;
 			}
 		}
 	}
@@ -640,9 +640,269 @@ protected:
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
 				autoState++;
-				drive->isIntakingAuto = true;
 			}
 			break;
+		}
+	}
+
+	void middleToRightSwitchDouble() {
+
+		switch (autoState) {
+		case 0:
+			if (driveStraight(30, 0.5) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (turn(30, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 1 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 2:
+			if (driveStraight(58, 0.5) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				drive->resetEncoders();
+				std::cout << "State 2 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (turn(-12, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 3 finished at yaw = "
+						<< drive->gyro->GetYaw() << std::endl;
+				autoState++;
+			}
+			break;
+		case 4:
+			if (drive->liftSwitch() == true) {
+				autoState++;
+				std::cout << "State 4 finished" << std::endl;
+			}
+			break;
+		case 5:
+			if (driveStraight(10, 0.5) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 5 finished" << std::endl;
+			}
+			break;
+		case 6:
+			if (drive->shootCube() == true) {
+				autoState++;
+				std::cout << "State 6 complete" << std::endl;
+			}
+			break;
+		case 7:
+			if (driveStraight(-24, 0.5)) {
+				autoState++;
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 7 complete" << std::endl;
+			}
+			break;
+		case 8:
+			if (turn(-44, 0.5)) {
+				autoState++;
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+			}
+			break;
+		case 9:
+			if (drive->liftFloor()) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				drive->lowerIntake();
+			}
+			break;
+		case 10:
+			if (driveStraight(54, 0.5)) {
+				drive->raiseIntake();
+				sleep(800);
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 11:
+			if (driveStraight(-36, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				drive->raiseIntake();
+			}
+			break;
+		case 12:
+			if (turn(70, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 13:
+			if (drive->liftSwitch()) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 14:
+			if (driveStraight(20, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				drive->raiseIntake();
+				drive->setGrippers(-0.40);
+				autoState++;
+			}
+			break;
+		case 15:
+			if (driveStraight(-20, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+		}
+	}
+
+	void middleToLeftSwitchDouble() {
+
+		switch (autoState) {
+		case 0:
+			if (driveStraight(20, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (turn(-50, 0.5) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 1 finished" << std::endl;
+				autoState++;
+			}
+			break;
+		case 2:
+			if (driveStraight(90, 0.75) == true) {
+				drive->gyro->ZeroYaw();
+				autoState++;
+				drive->resetEncoders();
+				std::cout << "State 2 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (turn(40, 0.6) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 4:
+			if (drive->liftSwitch() == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 4 finished" << std::endl;
+			}
+			break;
+		case 5:
+			if (driveStraight(24, 0.5) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 5 finished" << std::endl;
+				drive->setGrippers(-0.40);
+			}
+			break;
+		case 6:
+			if (drive->shootCube() == true) {
+				autoState++;
+				std::cout << "State 6 complete" << std::endl;
+			}
+			break;
+		case 7:
+			if (driveStraight(-30, 0.5)) {
+				autoState++;
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 7 complete" << std::endl;
+			}
+			break;
+		case 8:
+			if (turn(24, 0.5)) {
+				autoState++;
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+			}
+			break;
+		case 9:
+			if (drive->liftFloor()) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				drive->lowerIntake();
+			}
+			break;
+		case 10:
+			if (driveStraight(48, 0.5)) {
+				std::cout << "start case 9" << std::endl;
+				drive->raiseIntake();
+				std::cout << "raise intake" << std::endl;
+				sleep(800);
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "finish 9" << std::endl;
+			}
+			break;
+		case 11:
+			if (driveStraight(-36, 0.5)) {
+				std::cout << "start 10" << std::endl;
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				drive->raiseIntake();
+			}
+			break;
+		case 12:
+			if (turn(-70, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 13:
+			if (drive->liftSwitch()) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 14:
+			if (driveStraight(20, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				drive->raiseIntake();
+				drive->setGrippers(-0.40);
+				autoState++;
+			}
+			break;
+		case 15:
+			if (driveStraight(-20, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
 		}
 	}
 
@@ -765,7 +1025,7 @@ protected:
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
 				autoState++;
-				std::cout << "State 4 finished" << std::endl;
+				std::cout << "State 1 finished" << std::endl;
 			}
 			break;
 		case 2:
@@ -773,14 +1033,14 @@ protected:
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
 				autoState++;
-				std::cout << "State 1 finished" << std::endl;
+				std::cout << "State 2 finished" << std::endl;
 			}
 			break;
 		case 3:
 			if (drive->shootCube() == true) {
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
-				std::cout << "State 6 complete" << std::endl;
+				std::cout << "State 3 complete" << std::endl;
 				autoState++;
 			}
 			break;
@@ -788,16 +1048,193 @@ protected:
 			if (turn(75, 0.5)) {
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
-				std::cout << "State 6 complete" << std::endl;
+				std::cout << "State 4 complete" << std::endl;
+				autoState++;
+			}
+			break;
+		case 5:
+			if (drive->shootCube()) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		}
+	}
+
+	void leftToLeftScaleDouble() {
+
+		switch (autoState) {
+		case 0:
+			if (driveStraightRamp(284, 0.75) == true) { //252
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (drive->liftScale() == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 1 finished" << std::endl;
+			}
+			break;
+		case 2:
+			if (turn(80, 0.55) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 2 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (drive->shootCube() == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 3 complete" << std::endl;
+				autoState++;
+			}
+			break;
+		case 4:
+			if (turn(90, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 4 complete" << std::endl;
+				autoState++;
+			}
+			break;
+		case 5:
+			if (driveStraight(80, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 6:
+			if (turn(-15, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 7:
+			if (driveStraight(35, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 8:
+			if (driveStraight(-20, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
 				autoState++;
 			}
 		}
+
+		// lower the lift while we turn around
+		if (autoState > 4 && autoState < 7) {
+			drive->liftFloor();
+		}
+
+		if (autoState > 6 && autoState < 8) {
+			drive->lowerIntake();
+		} else {
+			drive->raiseIntake();
+		}
 	}
+
+	void rightToRightScaleDouble() {
+
+		switch (autoState) {
+		case 0:
+			if (driveStraightRamp(260, 0.95) == true) { //252
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 0 finished" << std::endl;
+			}
+			break;
+		case 1:
+			if (drive->liftScale() == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 1 finished" << std::endl;
+			}
+			break;
+		case 2:
+			if (turn(-60, 0.75) == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+				std::cout << "State 2 finished" << std::endl;
+			}
+			break;
+		case 3:
+			if (drive->shootCube() == true) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 3 complete" << std::endl;
+				autoState++;
+			}
+			break;
+		case 4:
+			if (turn(-70, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				std::cout << "State 4 complete" << std::endl;
+				autoState++;
+			}
+			break;
+		case 5:
+			if (driveStraight(80, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 6:
+			if (turn(25, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 7:
+			if (driveStraight(35, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+			break;
+		case 8:
+			if (driveStraight(-20, 0.5)) {
+				drive->gyro->ZeroYaw();
+				drive->resetEncoders();
+				autoState++;
+			}
+		}
+
+		// lower the lift while we turn around
+		if (autoState > 4 && autoState < 7) {
+			drive->liftFloor();
+		}
+
+		if (autoState > 6 && autoState < 8) {
+			drive->lowerIntake();
+		} else {
+			drive->raiseIntake();
+		}
+	}
+
 	void leftToRightScale() {
 
 		switch (autoState) {
 		case 0:
-			if (driveStraightRamp(198, 0.75) == true) {
+			if (driveStraightRamp(216, 0.75) == true) {
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
 				std::cout << "State 0 finished" << std::endl;
@@ -813,7 +1250,7 @@ protected:
 			}
 			break;
 		case 2:
-			if (driveStraight(190, 0.85) == true) {
+			if (driveStraight(196, 0.85) == true) {
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
 				std::cout << "State 2 finished" << std::endl;
@@ -836,7 +1273,7 @@ protected:
 			}
 			break;
 		case 5:
-			if (driveStraight(25, 0.40) == true) {
+			if (driveStraight(34, 0.35) == true) {
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
 				autoState++;
@@ -850,7 +1287,7 @@ protected:
 			}
 			break;
 		case 7:
-			if (driveStraight(-18)) {
+			if (driveStraight(-24, 0.4)) {
 				autoState++;
 				std::cout << "State 7 complete" << std::endl;
 			}
@@ -868,7 +1305,7 @@ protected:
 
 		switch (autoState) {
 		case 0:
-			if (driveStraight(122, 0.5) == true) {
+			if (driveStraight(136, 0.5) == true) {
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
 				autoState++;
@@ -989,7 +1426,7 @@ protected:
 
 		switch (autoState) {
 		case 0:
-			if (driveStraightRamp(278, 0.70) == true) {
+			if (driveStraightRamp(283, 0.70) == true) {
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
 				autoState++;
@@ -1006,7 +1443,7 @@ protected:
 			}
 			break;
 		case 2:
-			if (turn(-75, 0.45)) {
+			if (turn(-72, 0.45)) {
 				drive->gyro->ZeroYaw();
 				drive->resetEncoders();
 				autoState++;
